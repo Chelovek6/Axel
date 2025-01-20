@@ -8,64 +8,57 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LineChartView extends View {
 
-    private Paint xLinePaint;
-    private Paint yLinePaint;
-    private Paint zLinePaint;
-    private Paint totalLinePaint;
-    private Paint axisPaint;
-    private Paint gridPaint;
+    private Paint linePaint, gridPaint, textPaint;
+    private List<Float> xValues = new ArrayList<>();
+    private List<Float> yValues = new ArrayList<>();
+    private List<Float> zValues = new ArrayList<>();
+    private List<Float> totalValues = new ArrayList<>();
 
-    private ArrayList<Float> xDataPoints = new ArrayList<>();
-    private ArrayList<Float> yDataPoints = new ArrayList<>();
-    private ArrayList<Float> zDataPoints = new ArrayList<>();
-    private ArrayList<Float> totalDataPoints = new ArrayList<>();
-
-    private int visibleDataCount = 50;
+    private static final float AXIS_MIN = -0.5f;
+    private static final float AXIS_MAX = 1.5f;
+    private static final float STEP = 0.5f;
+    private static final int MAX_POINTS = 100;
 
     public LineChartView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
+    }
 
+    private void init() {
 
-        xLinePaint = new Paint();
-        xLinePaint.setColor(Color.BLUE);
-        xLinePaint.setStrokeWidth(5f);
+        linePaint = new Paint();
+        linePaint.setStrokeWidth(5f);
+        linePaint.setStyle(Paint.Style.STROKE);
 
-        yLinePaint = new Paint();
-        yLinePaint.setColor(Color.RED);
-        yLinePaint.setStrokeWidth(5f);
-
-        zLinePaint = new Paint();
-        zLinePaint.setColor(Color.GREEN);
-        zLinePaint.setStrokeWidth(5f);
-
-        totalLinePaint = new Paint();
-        totalLinePaint.setColor(Color.MAGENTA);
-        totalLinePaint.setStrokeWidth(5f);
-
-        axisPaint = new Paint();
-        axisPaint.setColor(Color.BLACK);
-        axisPaint.setStrokeWidth(3f);
 
         gridPaint = new Paint();
         gridPaint.setColor(Color.LTGRAY);
-        gridPaint.setStrokeWidth(2f);
+        gridPaint.setStrokeWidth(1f);
+
+
+        textPaint = new Paint();
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(30f);
+        textPaint.setAntiAlias(true);
     }
 
     public void addDataPoint(float x, float y, float z, float total) {
-        if (xDataPoints.size() >= visibleDataCount) {
-            xDataPoints.remove(0);
-            yDataPoints.remove(0);
-            zDataPoints.remove(0);
-            totalDataPoints.remove(0);
-        }
 
-        xDataPoints.add(x);
-        yDataPoints.add(y);
-        zDataPoints.add(z);
-        totalDataPoints.add(total);
+        xValues.add(x);
+        yValues.add(y);
+        zValues.add(z);
+        totalValues.add(total);
+
+
+        if (xValues.size() > MAX_POINTS) xValues.remove(0);
+        if (yValues.size() > MAX_POINTS) yValues.remove(0);
+        if (zValues.size() > MAX_POINTS) zValues.remove(0);
+        if (totalValues.size() > MAX_POINTS) totalValues.remove(0);
+
         invalidate();
     }
 
@@ -75,35 +68,54 @@ public class LineChartView extends View {
 
         int width = getWidth();
         int height = getHeight();
-
-        float zeroLevel = height / 2f;
-        float scaleY = zeroLevel / 10;
+        int padding = 50;
 
 
-        canvas.drawLine(50, zeroLevel, width - 50, zeroLevel, axisPaint);
-        canvas.drawLine(50, 0, 50, height, axisPaint);
+        drawGrid(canvas, width, height, padding);
 
-        if (xDataPoints.isEmpty()) return;
 
-        float scaleX = (width - 100) / (float) (visibleDataCount - 1);
-        drawLine(canvas, xDataPoints, zeroLevel, scaleX, scaleY, xLinePaint);
-        drawLine(canvas, yDataPoints, zeroLevel, scaleX, scaleY, yLinePaint);
-        drawLine(canvas, zDataPoints, zeroLevel, scaleX, scaleY, zLinePaint);
-        drawLine(canvas, totalDataPoints, zeroLevel, scaleX, scaleY, totalLinePaint);
+        drawLineChart(canvas, xValues, Color.BLUE, width, height, padding);
+        drawLineChart(canvas, yValues, Color.RED, width, height, padding);
+        drawLineChart(canvas, zValues, Color.GREEN, width, height, padding);
+        drawLineChart(canvas, totalValues, Color.MAGENTA, width, height, padding);
     }
 
-    private void drawLine(Canvas canvas, ArrayList<Float> dataPoints, float zeroLevel, float scaleX, float scaleY, Paint paint) {
-        Float lastX = null, lastY = null;
-        for (int i = 0; i < dataPoints.size(); i++) {
-            float value = dataPoints.get(i);
-            float x = 50 + i * scaleX;
-            float y = zeroLevel - value * scaleY;
+    private void drawGrid(Canvas canvas, int width, int height, int padding) {
+        float graphHeight = height - 2 * padding;
+        float graphWidth = width - 2 * padding;
 
-            if (lastX != null && lastY != null) {
-                canvas.drawLine(lastX, lastY, x, y, paint);
-            }
-            lastX = x;
-            lastY = y;
+
+        for (float i = AXIS_MIN; i <= AXIS_MAX; i += STEP) {
+            float y = padding + graphHeight * (1 - (i - AXIS_MIN) / (AXIS_MAX - AXIS_MIN));
+            canvas.drawLine(padding, y, width - padding, y, gridPaint);
+            canvas.drawText(String.format("%.1f", i), 10, y, textPaint);
+        }
+
+
+        int horizontalSteps = 10;
+        for (int i = 0; i <= horizontalSteps; i++) {
+            float x = padding + i * (graphWidth / horizontalSteps);
+            canvas.drawLine(x, padding, x, height - padding, gridPaint);
+        }
+    }
+
+    private void drawLineChart(Canvas canvas, List<Float> values, int color, int width, int height, int padding) {
+        if (values.size() < 2) return;
+
+        float graphHeight = height - 2 * padding;
+        float graphWidth = width - 2 * padding;
+
+        linePaint.setColor(color);
+
+        int maxVisiblePoints = Math.min(values.size(), MAX_POINTS);
+        float pointSpacing = graphWidth / (MAX_POINTS - 1);
+        for (int i = 1; i < maxVisiblePoints; i++) {
+            float startX = padding + (i - 1) * pointSpacing;
+            float startY = padding + graphHeight * (1 - (values.get(i - 1) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN));
+            float stopX = padding + i * pointSpacing;
+            float stopY = padding + graphHeight * (1 - (values.get(i) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN));
+
+            canvas.drawLine(startX, startY, stopX, stopY, linePaint);
         }
     }
 }
