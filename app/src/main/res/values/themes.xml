@@ -3,6 +3,10 @@
     <style name="Base.Theme.Axel" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/app_primary_color</item>
+        <item name="colorPrimaryDark">@color/app_primary_color</item>
+        <item name="colorAccent">@color/app_primary_color</item>
+
     </style>
 
     <style name="Theme.Axel" parent="Base.Theme.Axel" />
