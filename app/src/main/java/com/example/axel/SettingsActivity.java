@@ -1,9 +1,11 @@
 package com.example.axel;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,6 +28,21 @@ public class SettingsActivity extends AppCompatActivity {
                 finish(); // Закрыть текущую Activity
             }
         });
+        CheckBox keepScreenOnCheckBox = findViewById(R.id.keep_screen_on);
+        keepScreenOnCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } else {
+                getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        });
+        SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        CheckBox checkBox = findViewById(R.id.keep_screen_on);
+
+        checkBox.setChecked(sharedPreferences.getBoolean("KeepScreenOn", false));
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sharedPreferences.edit().putBoolean("KeepScreenOn", isChecked).apply();
+        });
     }
 
     @Override
@@ -36,4 +53,5 @@ public class SettingsActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 }
