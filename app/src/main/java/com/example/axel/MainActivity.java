@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean isRecording = false;
     private FileWriter csvWriter;
     private File tempCsvFile;
-
+    private long recordingStartTime;
     private TextView accelXText, accelYText, accelZText, accelTotalText;
 
     @Override
@@ -78,23 +79,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         recordButton.setOnClickListener(v -> {
             if (isRecording) {
                 stopRecording();
-                recordButton.setText("▶"); // Треугольник
+                recordButton.setText("▶");
             } else {
                 startRecording();
-                recordButton.setText("■"); // Квадрат
+                recordButton.setText("■");
             }
         });
     }
 
     private void startRecording() {
         isRecording = true;
-
+        recordingStartTime = System.currentTimeMillis();
         String fileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date()) + ".csv";
-        tempCsvFile = new File(getCacheDir(), fileName); // Создаем временный файл
+        tempCsvFile = new File(getCacheDir(), fileName);
 
         try {
             csvWriter = new FileWriter(tempCsvFile);
-            csvWriter.append("time;x;y;z;totalAcceleration\n"); // Заголовки
+            csvWriter.append("time;x;y;z;totalAcceleration\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -118,32 +119,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
-
-
-
-    private void saveToFile(String fileName, List<String> data) {
-        try {
-
-            File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-
-            if (!downloadDir.exists()) {
-                downloadDir.mkdirs();
-            }
-
-            File file = new File(downloadDir, fileName + ".csv");
-            try (FileWriter writer = new FileWriter(file)) {
-                for (String line : data) {
-                    writer.write(line + "\n");
-                }
-            }
-
-
-            Toast.makeText(this, "Файл успешно сохранён в " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Ошибка при сохранении файла: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
     private void showSaveDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Сохранить запись");
@@ -158,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 userFileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
             }
             File finalFile = new File(getCacheDir(), userFileName + ".csv");
-            shareSavedFile(finalFile);
+
 
             if (tempCsvFile.renameTo(finalFile)) {
                 shareSavedFile(finalFile);
@@ -171,12 +146,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         builder.show();
     }
 
-    private void shareFile(File file) {
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/csv");
-        intent.putExtra(Intent.EXTRA_STREAM, android.net.Uri.fromFile(file));
-        startActivity(Intent.createChooser(intent, "Отправить файл"));
-    }
 
     private void shareSavedFile(File file) {
         Uri fileUri = FileProvider.getUriForFile(this, "com.example.axel.provider", file);
@@ -186,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        // Открываем стандартное окно выбора приложения
+
         startActivity(Intent.createChooser(shareIntent, "Отправить файл через"));
     }
 
@@ -194,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
 
@@ -209,10 +178,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
-            float x = event.values[0] / 9.8f;
-            float y = event.values[1] / 9.8f;
-            float z = event.values[2] / 9.8f;
+            float x = event.values[0] ;
+            float y = event.values[1] ;
+            float z = event.values[2] ;
 
+            Log.d("AccelerometerData", String.format(Locale.getDefault(), "Raw: x=%.6f, y=%.6f, z=%.6f", x, y, z));
+
+            x /= 9.8f;
+            y /= 9.8f;
+            z /= 9.8f;
 
             float totalAcceleration = (float) Math.sqrt(x * x + y * y + z * z);
 
@@ -220,21 +194,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             lineChartView.addDataPoint(x, y, z, totalAcceleration);
 
 
-            accelXText.setText(String.format("x=%.2f", x));
-            accelYText.setText(String.format(" y=%.2f", y));
-            accelZText.setText(String.format(" z=%.2f", z));
-            accelTotalText.setText(String.format(" ОУ=%.2f", totalAcceleration));
-            double currentTime = System.currentTimeMillis() / 1000.0;
+            accelXText.setText(String.format("x=%.6f", x));
+            accelYText.setText(String.format(" y=%.6f", y));
+            accelZText.setText(String.format(" z=%.6f", z));
+            accelTotalText.setText(String.format(" ОУ=%.6f", totalAcceleration));
 
 
-            writeDataToCsv(currentTime, x, y, z, totalAcceleration);
+
+            writeDataToCsv( x, y, z, totalAcceleration);
         }
     }
-    private void writeDataToCsv(double time, float x, float y, float z, float totalAcceleration) {
+    private void writeDataToCsv(float x, float y, float z, float totalAcceleration) {
         if (csvWriter != null) {
             try {
-                csvWriter.append(String.format(Locale.getDefault(), "%.3f;%.2f;%.2f;%.2f;%.2f\n",
-                        time, x, y, z, totalAcceleration));
+                double timeSinceStart = (System.currentTimeMillis() - recordingStartTime) / 1000.0;
+                csvWriter.append(String.format(Locale.getDefault(), "%.3f;%.6f;%.6f;%.6f;%.6f\n",
+                        timeSinceStart, x, y, z, totalAcceleration));
             } catch (IOException e) {
                 e.printStackTrace();
             }

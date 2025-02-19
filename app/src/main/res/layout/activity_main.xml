@@ -8,8 +8,8 @@
 
     <TextView
         android:id="@+id/accel_x"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="17dp"
         android:text="x=0.0"
@@ -17,10 +17,10 @@
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/line_chart_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.217"
+        app:layout_constraintHorizontal_bias="0.227"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.262" />
 
     <Button
         android:id="@+id/record_button"
@@ -30,55 +30,54 @@
         android:text="▶"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.863"
+        app:layout_constraintHorizontal_bias="0.954"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.94" />
+        app:layout_constraintVertical_bias="0.962" />
 
     <TextView
         android:id="@+id/accel_y"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="20dp"
         android:layout_marginBottom="12dp"
         android:text=" y=0.0"
         android:textColor="#FF0000"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/line_chart_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.375"
+        app:layout_constraintHorizontal_bias="0.227"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.84" />
+        app:layout_constraintVertical_bias="0.744" />
 
     <TextView
         android:id="@+id/accel_z"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="20dp"
         android:layout_marginBottom="15dp"
         android:text=" z=0.0"
         android:textColor="#00FF00"
         android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@+id/line_chart_view"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.548"
+        app:layout_constraintHorizontal_bias="0.227"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.954" />
+        app:layout_constraintVertical_bias="0.13" />
 
     <TextView
         android:id="@+id/accel_total"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="75dp"
+        android:layout_height="20dp"
         android:layout_marginBottom="15dp"
         android:text=" ОУ=0.0"
         android:textColor="#800080"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/line_chart_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.754"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.954" />
+        app:layout_constraintVertical_bias="0.771" />
 
     <com.example.axel.LineChartView
         android:id="@+id/line_chart_view"
@@ -89,7 +88,7 @@
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.325" />
+        app:layout_constraintVertical_bias="0.662" />
 
     <ImageButton
         android:id="@+id/settings_button"
@@ -98,14 +97,14 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:background="@null"
-        android:src="@drawable/baseline_settings_24"
         android:contentDescription="Открыть настройки"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintHorizontal_bias="0.956"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintVertical_bias="0.022" />
+        android:src="@drawable/baseline_settings_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
