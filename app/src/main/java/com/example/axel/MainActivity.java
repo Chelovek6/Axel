@@ -123,7 +123,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Сохранить запись");
 
+        String defaultFileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
+
         EditText input = new EditText(this);
+        input.setText(defaultFileName);
+        input.setSelection(0, defaultFileName.length());
         input.setHint("Введите название файла");
         builder.setView(input);
 
