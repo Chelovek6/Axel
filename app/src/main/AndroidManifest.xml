@@ -37,7 +37,12 @@
         </activity>
         <activity android:name=".SettingsActivity" />
 
+        <service
+            android:name=".RecordingService"
+            android:foregroundServiceType="dataSync" />
     </application>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 </manifest>
