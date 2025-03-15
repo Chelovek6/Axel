@@ -35,6 +35,7 @@ public class RecordingService extends Service {
         // Запускаем сервис в качестве Foreground Service
         startForeground(1, notification);
 
+
         dataRecorder.startRecording();
 
         // Возвращаем путь к файлу через Intent

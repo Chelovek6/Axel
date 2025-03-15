@@ -10,16 +10,27 @@ import android.widget.CheckBox;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SettingsActivity extends AppCompatActivity {
+
+    private SharedPreferences sharedPreferences;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-
+        sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+
+        CheckBox fftCheckBox = findViewById(R.id.fft_filter);
+        fftCheckBox.setChecked(sharedPreferences.getBoolean("FFTFilter", false));
+        fftCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sharedPreferences.edit().putBoolean("FFTFilter", isChecked).apply();
+        });
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -44,6 +55,7 @@ public class SettingsActivity extends AppCompatActivity {
             sharedPreferences.edit().putBoolean("KeepScreenOn", isChecked).apply();
         });
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

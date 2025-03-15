@@ -23,6 +23,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import org.jtransforms.fft.FloatFFT_1D;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,7 +39,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView accelXText, accelYText, accelZText, accelTotalText;
     private DataRecorder dataRecorder;
     private String tempCsvFilePath;
-
+    //for fft
+    private static final int FFT_BUFFER_SIZE = 256;
+    private float[] fftBuffer = new float[FFT_BUFFER_SIZE];
+    private int bufferIndex = 0;
+    private FloatFFT_1D fft;
+    private float[] window;
+    private boolean isFFTEnabled = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +92,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 recordButton.setText("■");
             }
         });
+        fft = new FloatFFT_1D(FFT_BUFFER_SIZE);
+        initWindow();
+    }
+    private void initWindow() {
+        window = new float[FFT_BUFFER_SIZE];
+        for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
+            window[i] = (float) (0.5 * (1 - Math.cos(2 * Math.PI * i / (FFT_BUFFER_SIZE - 1))));
+        }
     }
 
     private void startRecording() {
@@ -157,7 +173,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        isFFTEnabled = prefs.getBoolean("FFTFilter", false);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+
+
     }
 
     @Override
@@ -194,9 +214,49 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             accelYText.setText(String.format(" y=%.6f", y));
             accelZText.setText(String.format(" z=%.6f", z));
             accelTotalText.setText(String.format(" ОУ=%.6f", totalAcceleration));
+
+            if (isFFTEnabled) {
+                fftBuffer[bufferIndex++] = totalAcceleration;
+                if (bufferIndex >= FFT_BUFFER_SIZE) {
+                    applyFFT();
+                    bufferIndex = 0;
+                }
+            } else {
+
+                dataRecorder.writeData(x, y, z, totalAcceleration);
+            }
         }
     }
+    private void applyFFT() {
+        // 1. Применяем окно
+        for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
+            fftBuffer[i] *= window[i];
+        }
 
+        // 2. FFT преобразование
+        fft.realForward(fftBuffer);
+
+        // 3. Обнуляем высокие частоты (пример: 5 Гц)
+        int cutoffBin = (int) (5 * FFT_BUFFER_SIZE / 50); // 50 Гц - частота сенсора
+        for (int i = cutoffBin; i < FFT_BUFFER_SIZE/2; i++) {
+            fftBuffer[2*i] = 0;   // Real
+            fftBuffer[2*i + 1] = 0; // Imaginary
+        }
+
+        // 4. Обратное преобразование
+        fft.realInverse(fftBuffer, true);
+
+        // 5. Обновляем график
+        for (float value : fftBuffer) {
+            lineChartView.addDataPoint(0, 0, 0, value); // ОУ
+        }
+
+        // После фильтрации:
+        for (float value : fftBuffer) {
+
+            dataRecorder.writeData(0, 0, 0, value);
+        }
+    }
     private final BroadcastReceiver recordingStartedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

@@ -28,6 +28,21 @@
         android:text="Оставлять дисплей включенным"
         android:textColor="#FFFFFF" />
 
+    <CheckBox
+        android:id="@+id/fft_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="238dp"
+        android:layout_marginEnd="77dp"
+        android:layout_marginBottom="445dp"
+        android:text="Фильтр FFT"
+        android:textColor="#FFFFFF" />
+
     <Button
         android:id="@+id/back_button"
         android:layout_width="wrap_content"
@@ -36,5 +51,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Назад" />
+
 
 </RelativeLayout>

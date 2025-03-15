@@ -24,6 +24,7 @@ public class DataRecorder implements SensorEventListener {
     private long recordingStartTime;
     private Context context;
     private DataListener dataListener;
+    private boolean isFFTEnabled = false;
 
     public interface DataListener {
         void onDataUpdated(float x, float y, float z, float totalAcceleration);
@@ -36,6 +37,9 @@ public class DataRecorder implements SensorEventListener {
         if (sensorManager != null) {
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         }
+    }
+    public void writeData(float x, float y, float z, float totalAcceleration) {
+        writeDataToCsv(x, y, z, totalAcceleration);
     }
 
     public void startRecording() {
@@ -65,6 +69,9 @@ public class DataRecorder implements SensorEventListener {
             e.printStackTrace();
         }
     }
+    public void setFFTEnabled(boolean enabled) {
+        this.isFFTEnabled = enabled;
+    }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -80,6 +87,9 @@ public class DataRecorder implements SensorEventListener {
             if (dataListener != null) {
                 dataListener.onDataUpdated(x, y, z, totalAcceleration);
             }
+            if (!isFFTEnabled) { // Записываем только если фильтр выключен
+                writeDataToCsv(x, y, z, totalAcceleration);
+            }
         }
     }
 
@@ -94,6 +104,8 @@ public class DataRecorder implements SensorEventListener {
             }
         }
     }
+
+
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
