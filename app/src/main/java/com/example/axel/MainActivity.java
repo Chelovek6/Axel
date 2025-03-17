@@ -39,12 +39,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView accelXText, accelYText, accelZText, accelTotalText;
     private DataRecorder dataRecorder;
     private String tempCsvFilePath;
-    //for fft
+    private FFTProcessor fftProcessor;
     private static final int FFT_BUFFER_SIZE = 256;
-    private float[] fftBuffer = new float[FFT_BUFFER_SIZE];
-    private int bufferIndex = 0;
-    private FloatFFT_1D fft;
-    private float[] window;
+    private static final float SAMPLE_RATE = 50.0f; // Частота сенсора (Гц)
+    private static final float CUTOFF_FREQ = 5.0f;  // Частота среза (Гц)
+
     private boolean isFFTEnabled = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,14 +91,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 recordButton.setText("■");
             }
         });
-        fft = new FloatFFT_1D(FFT_BUFFER_SIZE);
-        initWindow();
-    }
-    private void initWindow() {
-        window = new float[FFT_BUFFER_SIZE];
-        for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
-            window[i] = (float) (0.5 * (1 - Math.cos(2 * Math.PI * i / (FFT_BUFFER_SIZE - 1))));
-        }
+        fftProcessor = new FFTProcessor(FFT_BUFFER_SIZE);
+
     }
 
     private void startRecording() {
@@ -216,47 +209,55 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             accelTotalText.setText(String.format(" ОУ=%.6f", totalAcceleration));
 
             if (isFFTEnabled) {
-                fftBuffer[bufferIndex++] = totalAcceleration;
-                if (bufferIndex >= FFT_BUFFER_SIZE) {
-                    applyFFT();
-                    bufferIndex = 0;
+                fftProcessor.addData(x, y, z);
+                if (fftProcessor.isBufferFull()) {
+                    float[][] filtered = fftProcessor.processFFT(CUTOFF_FREQ, SAMPLE_RATE);
+                    for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
+                        float fx = filtered[0][i];
+                        float fy = filtered[1][i];
+                        float fz = filtered[2][i];
+                        float fTotal = (float) Math.sqrt(fx * fx + fy * fy + fz * fz);
+
+                        lineChartView.addDataPoint(fx, fy, fz, fTotal);
+                        dataRecorder.writeData(fx, fy, fz, fTotal);
+                    }
                 }
             } else {
-
+                lineChartView.addDataPoint(x, y, z, totalAcceleration);
                 dataRecorder.writeData(x, y, z, totalAcceleration);
             }
         }
     }
-    private void applyFFT() {
-        // 1. Применяем окно
-        for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
-            fftBuffer[i] *= window[i];
-        }
-
-        // 2. FFT преобразование
-        fft.realForward(fftBuffer);
-
-        // 3. Обнуляем высокие частоты (пример: 5 Гц)
-        int cutoffBin = (int) (5 * FFT_BUFFER_SIZE / 50); // 50 Гц - частота сенсора
-        for (int i = cutoffBin; i < FFT_BUFFER_SIZE/2; i++) {
-            fftBuffer[2*i] = 0;   // Real
-            fftBuffer[2*i + 1] = 0; // Imaginary
-        }
-
-        // 4. Обратное преобразование
-        fft.realInverse(fftBuffer, true);
-
-        // 5. Обновляем график
-        for (float value : fftBuffer) {
-            lineChartView.addDataPoint(0, 0, 0, value); // ОУ
-        }
-
-        // После фильтрации:
-        for (float value : fftBuffer) {
-
-            dataRecorder.writeData(0, 0, 0, value);
-        }
-    }
+//    private void applyFFT() {
+//        // 1. Применяем окно
+//        for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
+//            fftBuffer[i] *= window[i];
+//        }
+//
+//        // 2. FFT преобразование
+//        fft.realForward(fftBuffer);
+//
+//        // 3. Обнуляем высокие частоты (пример: 5 Гц)
+//        int cutoffBin = (int) (5 * FFT_BUFFER_SIZE / 50); // 50 Гц - частота сенсора
+//        for (int i = cutoffBin; i < FFT_BUFFER_SIZE/2; i++) {
+//            fftBuffer[2*i] = 0;   // Real
+//            fftBuffer[2*i + 1] = 0; // Imaginary
+//        }
+//
+//        // 4. Обратное преобразование
+//        fft.realInverse(fftBuffer, true);
+//
+//        // 5. Обновляем график
+//        for (float value : fftBuffer) {
+//            lineChartView.addDataPoint(0, 0, 0, value); // ОУ
+//        }
+//
+//        // После фильтрации:
+//        for (float value : fftBuffer) {
+//
+//            dataRecorder.writeData(0, 0, 0, value);
+//        }
+//    }
     private final BroadcastReceiver recordingStartedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
