@@ -26,11 +26,9 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
 
-        CheckBox fftCheckBox = findViewById(R.id.fft_filter);
-        fftCheckBox.setChecked(sharedPreferences.getBoolean("FFTFilter", false));
-        fftCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            sharedPreferences.edit().putBoolean("FFTFilter", isChecked).apply();
-        });
+
+
+
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {

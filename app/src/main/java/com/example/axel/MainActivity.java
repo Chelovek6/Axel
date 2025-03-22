@@ -18,7 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.os.Handler;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
@@ -27,7 +27,9 @@ import org.jtransforms.fft.FloatFFT_1D;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, DataRecorder.DataListener {
@@ -40,16 +42,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataRecorder dataRecorder;
     private String tempCsvFilePath;
     private FFTProcessor fftProcessor;
-    private static final int FFT_BUFFER_SIZE = 256;
-    private static final float SAMPLE_RATE = 50.0f; // Частота сенсора (Гц)
-    private static final float CUTOFF_FREQ = 5.0f;  // Частота среза (Гц)
 
+    private List<Float> rawBufferX = new ArrayList<>();
+    private List<Float> rawBufferY = new ArrayList<>();
+    private List<Float> rawBufferZ = new ArrayList<>();
+    private int fftBufferSize;
+    private List<Float> bufferX = new ArrayList<>();
+    private List<Float> bufferY = new ArrayList<>();
+    private List<Float> bufferZ = new ArrayList<>();
+    private List<Float> bufferTotal = new ArrayList<>();
+    private static final int BUFFER_SIZE = 3; // Размер буфера для усреднения
     private boolean isFFTEnabled = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        fftBufferSize = prefs.getInt("BufferSize", 256);
         IntentFilter filter = new IntentFilter("com.example.axel.RECORDING_STARTED");
         registerReceiver(recordingStartedReceiver, filter);
 
@@ -58,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelYText = findViewById(R.id.accel_y);
         accelZText = findViewById(R.id.accel_z);
         accelTotalText = findViewById(R.id.accel_total);
+
+        fftBufferSize = prefs.getInt("BufferSize", 256);
+
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         if (sensorManager != null) {
@@ -91,9 +103,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 recordButton.setText("■");
             }
         });
-        fftProcessor = new FFTProcessor(FFT_BUFFER_SIZE);
+
 
     }
+
+
 
     private void startRecording() {
         isRecording = true;
@@ -186,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.unregisterListener(this);
     }
 
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -193,71 +208,88 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float y = event.values[1];
             float z = event.values[2];
 
-            Log.d("AccelerometerData", String.format(Locale.getDefault(), "Raw: x=%.6f, y=%.6f, z=%.6f", x, y, z));
+            // Добавляем данные в буферы
+            bufferX.add(x);
+            bufferY.add(y);
+            bufferZ.add(z);
+            float total = (float) Math.sqrt(x*x + y*y + z*z);
+            bufferTotal.add(total);
 
-            x /= 9.8f;
-            y /= 9.8f;
-            z /= 9.8f;
+            // Если буфер заполнен, обрабатываем данные
+            if (bufferX.size() >= BUFFER_SIZE) {
+                // Вычисляем средние значения
+                float avgX = calculateAverage(bufferX);
+                float avgY = calculateAverage(bufferY);
+                float avgZ = calculateAverage(bufferZ);
+                float avgTotal = calculateAverage(bufferTotal);
 
-            float totalAcceleration = (float) Math.sqrt(x * x + y * y + z * z);
+                // Преобразуем в g-единицы и обновляем график
+                lineChartView.addRawData(
+                        avgX / 9.8f,
+                        avgY / 9.8f,
+                        avgZ / 9.8f,
+                        avgTotal / 9.8f
+                );
 
-            lineChartView.addDataPoint(x, y, z, totalAcceleration);
+                // Обновляем текстовые поля с усредненными значениями
+                accelXText.setText(String.format("x=%.6f", avgX / 9.8f));
+                accelYText.setText(String.format(" y=%.6f", avgY / 9.8f));
+                accelZText.setText(String.format(" z=%.6f", avgZ / 9.8f));
+                accelTotalText.setText(String.format(" ОУ=%.6f", avgTotal / 9.8f));
 
-            accelXText.setText(String.format("x=%.6f", x));
-            accelYText.setText(String.format(" y=%.6f", y));
-            accelZText.setText(String.format(" z=%.6f", z));
-            accelTotalText.setText(String.format(" ОУ=%.6f", totalAcceleration));
-
-            if (isFFTEnabled) {
-                fftProcessor.addData(x, y, z);
-                if (fftProcessor.isBufferFull()) {
-                    float[][] filtered = fftProcessor.processFFT(CUTOFF_FREQ, SAMPLE_RATE);
-                    for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
-                        float fx = filtered[0][i];
-                        float fy = filtered[1][i];
-                        float fz = filtered[2][i];
-                        float fTotal = (float) Math.sqrt(fx * fx + fy * fy + fz * fz);
-
-                        lineChartView.addDataPoint(fx, fy, fz, fTotal);
-                        dataRecorder.writeData(fx, fy, fz, fTotal);
-                    }
-                }
-            } else {
-                lineChartView.addDataPoint(x, y, z, totalAcceleration);
-                dataRecorder.writeData(x, y, z, totalAcceleration);
+                // Очищаем буферы
+                bufferX.clear();
+                bufferY.clear();
+                bufferZ.clear();
+                bufferTotal.clear();
             }
+
+            // Логирование сырых данных (для отладки)
+            Log.d("AccelerometerData", String.format(Locale.getDefault(), "Raw: x=%.6f, y=%.6f, z=%.6f", x, y, z));
         }
     }
-//    private void applyFFT() {
-//        // 1. Применяем окно
-//        for (int i = 0; i < FFT_BUFFER_SIZE; i++) {
-//            fftBuffer[i] *= window[i];
-//        }
+//    @Override
+//    public void onSensorChanged(SensorEvent event) {
+//        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+//            float x = event.values[0];
+//            float y = event.values[1];
+//            float z = event.values[2];
 //
-//        // 2. FFT преобразование
-//        fft.realForward(fftBuffer);
+//            bufferX.add(x);
+//            bufferY.add(y);
+//            bufferZ.add(z);
+//            float total = (float) Math.sqrt(x*x + y*y + z*z);
+//            bufferTotal.add(total);
 //
-//        // 3. Обнуляем высокие частоты (пример: 5 Гц)
-//        int cutoffBin = (int) (5 * FFT_BUFFER_SIZE / 50); // 50 Гц - частота сенсора
-//        for (int i = cutoffBin; i < FFT_BUFFER_SIZE/2; i++) {
-//            fftBuffer[2*i] = 0;   // Real
-//            fftBuffer[2*i + 1] = 0; // Imaginary
-//        }
+//            Log.d("AccelerometerData", String.format(Locale.getDefault(), "Raw: x=%.6f, y=%.6f, z=%.6f", x, y, z));
 //
-//        // 4. Обратное преобразование
-//        fft.realInverse(fftBuffer, true);
+//            x /= 9.8f;
+//            y /= 9.8f;
+//            z /= 9.8f;
 //
-//        // 5. Обновляем график
-//        for (float value : fftBuffer) {
-//            lineChartView.addDataPoint(0, 0, 0, value); // ОУ
-//        }
 //
-//        // После фильтрации:
-//        for (float value : fftBuffer) {
 //
-//            dataRecorder.writeData(0, 0, 0, value);
+//            float totalAcceleration = (float) Math.sqrt(x * x + y * y + z * z);
+//
+//            lineChartView.addRawData(x, y, z, totalAcceleration);
+//
+//            accelXText.setText(String.format("x=%.6f", x));
+//            accelYText.setText(String.format(" y=%.6f", y));
+//            accelZText.setText(String.format(" z=%.6f", z));
+//            accelTotalText.setText(String.format(" ОУ=%.6f", totalAcceleration));
+//
+//
 //        }
 //    }
+
+    private float calculateAverage(List<Float> list) {
+        float sum = 0;
+        for (float num : list) {
+            sum += num;
+        }
+        return sum / list.size();
+    }
+
     private final BroadcastReceiver recordingStartedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -274,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onDataUpdated(float x, float y, float z, float totalAcceleration) {
 
-        lineChartView.addDataPoint(x, y, z, totalAcceleration);
+        lineChartView.addRawData(x, y, z, totalAcceleration);
         accelXText.setText(String.format("x=%.6f", x));
         accelYText.setText(String.format(" y=%.6f", y));
         accelZText.setText(String.format(" z=%.6f", z));
