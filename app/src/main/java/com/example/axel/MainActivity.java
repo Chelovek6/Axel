@@ -43,9 +43,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private String tempCsvFilePath;
     private FFTProcessor fftProcessor;
 
-    private List<Float> rawBufferX = new ArrayList<>();
-    private List<Float> rawBufferY = new ArrayList<>();
-    private List<Float> rawBufferZ = new ArrayList<>();
+
     private int fftBufferSize;
     private List<Float> bufferX = new ArrayList<>();
     private List<Float> bufferY = new ArrayList<>();
@@ -92,7 +90,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         });
-
+        //na fft
+        Button fftButton = findViewById(R.id.fft_button);
+        fftButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, FFTActivity.class);
+            startActivity(intent);
+        });
+        //
         Button recordButton = findViewById(R.id.record_button);
         recordButton.setOnClickListener(v -> {
             if (isRecording) {

@@ -36,6 +36,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".SettingsActivity" />
+        <activity
+            android:name=".FFTActivity"
+            android:label="FFT Analysis"
+            android:parentActivityName=".MainActivity" />
 
         <service
             android:name=".RecordingService"
