@@ -11,7 +11,15 @@ public class FFTProcessor {
         this.fft = new FloatFFT_1D(size);
     }
 
-    public float[] computeFFT(float[] input) {
+    public float[] getFrequencies(float samplingRate) {
+        float[] frequencies = new float[fftSize/2];
+        for (int i = 0; i < frequencies.length; i++) {
+            frequencies[i] = (i * samplingRate) / fftSize;
+        }
+        return frequencies;
+    }
+
+    public float[] computeFFT(float[] input,float samplingRate) {
         float[] windowed = applyHannWindow(input);
         float[] fftData = new float[fftSize * 2];
         System.arraycopy(windowed, 0, fftData, 0, fftSize);
@@ -26,6 +34,7 @@ public class FFTProcessor {
         }
         return magnitudes;
     }
+
 
     private float[] applyHannWindow(float[] data) {
         float[] windowed = new float[fftSize];

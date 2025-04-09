@@ -38,9 +38,7 @@ public class DataRecorder implements SensorEventListener {
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         }
     }
-    public void writeData(float x, float y, float z, float totalAcceleration) {
-        writeDataToCsv(x, y, z, totalAcceleration);
-    }
+
 
     public void startRecording() {
         recordingStartTime = System.currentTimeMillis();

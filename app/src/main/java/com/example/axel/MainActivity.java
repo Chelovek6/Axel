@@ -50,6 +50,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private List<Float> bufferZ = new ArrayList<>();
     private List<Float> bufferTotal = new ArrayList<>();
     private static final int BUFFER_SIZE = 3; // Размер буфера для усреднения
+
+    //Частота
+    private TextView samplingRateText;
+    private long previousTimestamp = 0;
+    private final ArrayList<Float> samplingRates = new ArrayList<>();
+    //Частота
     private boolean isFFTEnabled = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +71,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelYText = findViewById(R.id.accel_y);
         accelZText = findViewById(R.id.accel_z);
         accelTotalText = findViewById(R.id.accel_total);
-
+        //Частота
+        samplingRateText = findViewById(R.id.sampling_rate_text);
+        //Частота
         fftBufferSize = prefs.getInt("BufferSize", 256);
 
 
@@ -207,6 +215,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        //Частота
+        long currentTimestamp = System.nanoTime();
+        if (previousTimestamp != 0) {
+            float intervalNs = currentTimestamp - previousTimestamp;
+            float frequencyHz = 1_000_000_000.0f / intervalNs; // Преобразуем наносекунды в Гц
+
+            // Усредняем последние 5 значений для стабильности
+            samplingRates.add(frequencyHz);
+            if (samplingRates.size() > 5) {
+                samplingRates.remove(0);
+            }
+
+            // Обновляем UI
+            runOnUiThread(() -> {
+                float avgFrequency = calculateAverageС(samplingRates);
+                samplingRateText.setText(String.format(Locale.getDefault(), "Частота: %.1f Гц", avgFrequency));
+            });
+        }
+        previousTimestamp = currentTimestamp;
+        //Частота
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             float x = event.values[0];
             float y = event.values[1];
@@ -252,39 +280,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("AccelerometerData", String.format(Locale.getDefault(), "Raw: x=%.6f, y=%.6f, z=%.6f", x, y, z));
         }
     }
-//    @Override
-//    public void onSensorChanged(SensorEvent event) {
-//        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-//            float x = event.values[0];
-//            float y = event.values[1];
-//            float z = event.values[2];
-//
-//            bufferX.add(x);
-//            bufferY.add(y);
-//            bufferZ.add(z);
-//            float total = (float) Math.sqrt(x*x + y*y + z*z);
-//            bufferTotal.add(total);
-//
-//            Log.d("AccelerometerData", String.format(Locale.getDefault(), "Raw: x=%.6f, y=%.6f, z=%.6f", x, y, z));
-//
-//            x /= 9.8f;
-//            y /= 9.8f;
-//            z /= 9.8f;
-//
-//
-//
-//            float totalAcceleration = (float) Math.sqrt(x * x + y * y + z * z);
-//
-//            lineChartView.addRawData(x, y, z, totalAcceleration);
-//
-//            accelXText.setText(String.format("x=%.6f", x));
-//            accelYText.setText(String.format(" y=%.6f", y));
-//            accelZText.setText(String.format(" z=%.6f", z));
-//            accelTotalText.setText(String.format(" ОУ=%.6f", totalAcceleration));
-//
-//
-//        }
-//    }
 
     private float calculateAverage(List<Float> list) {
         float sum = 0;
@@ -293,7 +288,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         return sum / list.size();
     }
-
+    //Частота
+    private float calculateAverageС(ArrayList<Float> list) {
+        float sum = 0;
+        for (float value : list) {
+            sum += value;
+        }
+        return sum / list.size();
+    }
+    //Частота
     private final BroadcastReceiver recordingStartedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

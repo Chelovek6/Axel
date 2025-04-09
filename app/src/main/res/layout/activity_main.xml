@@ -120,4 +120,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.962" />
+
+    <!-- Добавь этот блок в ConstraintLayout -->
+    <TextView
+        android:id="@+id/sampling_rate_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Частота: 0 Гц"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/line_chart_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.948"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.108" />
 </androidx.constraintlayout.widget.ConstraintLayout>
