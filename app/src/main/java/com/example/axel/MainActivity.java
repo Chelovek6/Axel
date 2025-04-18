@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, DataRecorder.DataListener {
 
@@ -115,7 +116,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 recordButton.setText("■");
             }
         });
-
+        Button savedFilesButton = findViewById(R.id.btn_saved_files);
+        savedFilesButton.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, SavedFilesActivity.class));
+        });
 
     }
 
@@ -147,35 +151,63 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //showSaveDialog(dataRecorder.getTempCsvFile()); // Передаём файл в метод
     }
 
-    private void showSaveDialog(File tempCsvFile) { // Добавьте параметр File
+    private void showSaveDialog(File tempCsvFile) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Сохранить запись");
 
         String defaultFileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
-
         EditText input = new EditText(this);
         input.setText(defaultFileName);
         input.setSelection(0, defaultFileName.length());
         input.setHint("Введите название файла");
         builder.setView(input);
 
+        // Флаг для отслеживания успешного сохранения
+        AtomicBoolean isSaved = new AtomicBoolean(false);
+
         builder.setPositiveButton("Сохранить", (dialog, which) -> {
+            isSaved.set(true); // Помечаем как сохраненное
             String userFileName = input.getText().toString().trim();
             if (userFileName.isEmpty()) {
-                userFileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
+                userFileName = defaultFileName;
             }
 
             File finalFile = new File(getCacheDir(), userFileName + ".csv");
 
             if (tempCsvFile.renameTo(finalFile)) {
+                // Сохраняем в БД и показываем диалог отправки
+                new DatabaseHelper(MainActivity.this).addRecord(userFileName, finalFile.getAbsolutePath());
                 shareSavedFile(finalFile);
             } else {
                 Toast.makeText(this, "Ошибка сохранения", Toast.LENGTH_SHORT).show();
             }
         });
 
-        builder.setNegativeButton("Отмена", (dialog, which) -> dialog.dismiss());
-        builder.show();
+        builder.setNegativeButton("Отмена", (dialog, which) -> {
+            // Удаляем временный файл при отмене
+            if (tempCsvFile.exists()) {
+                tempCsvFile.delete();
+            }
+            dialog.dismiss();
+        });
+
+        AlertDialog dialog = builder.create();
+
+        // Обработчик закрытия диалога (клик вне окна/назад)
+        dialog.setOnDismissListener(dialogInterface -> {
+            if (!isSaved.get() && tempCsvFile.exists()) {
+                // Автосохранение с именем по умолчанию
+                String autoFileName = defaultFileName;
+                File finalFile = new File(getCacheDir(), autoFileName + ".csv");
+
+                if (tempCsvFile.renameTo(finalFile)) {
+                    new DatabaseHelper(MainActivity.this).addRecord(autoFileName, finalFile.getAbsolutePath());
+                    Toast.makeText(this, "Автосохранено: " + autoFileName, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        dialog.show();
     }
 
     private void shareSavedFile(File file) {

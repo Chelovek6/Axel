@@ -36,6 +36,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SettingsActivity" />
+        <activity android:name=".DatabaseHelper" />
+        <activity android:name=".SavedFilesActivity" />
         <activity
             android:name=".FFTActivity"
             android:label="FFT Analysis"
