@@ -38,6 +38,7 @@
         <activity android:name=".SettingsActivity" />
         <activity android:name=".DatabaseHelper" />
         <activity android:name=".SavedFilesActivity" />
+        <activity android:name=".FileUtils" />
         <activity
             android:name=".FFTActivity"
             android:label="FFT Analysis"

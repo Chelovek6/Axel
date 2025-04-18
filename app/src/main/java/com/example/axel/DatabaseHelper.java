@@ -12,10 +12,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "records.db";
     private static final int DATABASE_VERSION = 1;
 
-    private static final String TABLE_RECORDS = "records";
+    public static final String TABLE_RECORDS = "records";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_NAME = "name";
-    private static final String COLUMN_PATH = "path";
+    public static final String COLUMN_PATH = "path";
     private static final String COLUMN_DATE = "date";
 
     public DatabaseHelper(Context context) {
@@ -30,6 +30,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_PATH + " TEXT,"
                 + COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP)";
         db.execSQL(CREATE_TABLE);
+    }
+    public List<String> getRecordsPaginated(int page, int pageSize) {
+        List<String> records = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_RECORDS +
+                " LIMIT " + pageSize + " OFFSET " + (page * pageSize);
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                records.add(cursor.getString(1) + "\n" + cursor.getString(3));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return records;
     }
 
     @Override
