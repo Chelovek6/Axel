@@ -23,7 +23,7 @@ public class RecordingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        boolean isFFT = intent != null && intent.getBooleanExtra("isFFT", false);
 
         // Создаём уведомление для Foreground Service
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -36,7 +36,7 @@ public class RecordingService extends Service {
         startForeground(1, notification);
 
 
-        dataRecorder.startRecording();
+        dataRecorder.startRecording(isFFT);
 
         // Возвращаем путь к файлу через Intent
         Intent resultIntent = new Intent("com.example.axel.RECORDING_STARTED");

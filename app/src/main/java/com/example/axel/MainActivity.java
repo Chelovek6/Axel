@@ -9,29 +9,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Handler;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-
-import org.jtransforms.fft.FloatFFT_1D;
-
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, DataRecorder.DataListener {
 
@@ -123,8 +112,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-
-
     private void startRecording() {
         isRecording = true;
 
@@ -142,81 +129,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (tempCsvFilePath != null) {
             File tempCsvFile = new File(tempCsvFilePath);
-            FileUtils.showSaveDialog(MainActivity.this, tempCsvFile); // Вызов из FileUtils
+            FileUtils.showSaveDialog(MainActivity.this, tempCsvFile,false); // Вызов из FileUtils
         } else {
             Toast.makeText(this, "Ошибка: файл не найден", Toast.LENGTH_SHORT).show();
         }
     }
-
-//    private void showSaveDialog(File tempCsvFile) {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setTitle("Сохранить запись");
-//
-//        String defaultFileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
-//        EditText input = new EditText(this);
-//        input.setText(defaultFileName);
-//        input.setSelection(0, defaultFileName.length());
-//        input.setHint("Введите название файла");
-//        builder.setView(input);
-//
-//        // Флаг для отслеживания успешного сохранения
-//        AtomicBoolean isSaved = new AtomicBoolean(false);
-//
-//        builder.setPositiveButton("Сохранить", (dialog, which) -> {
-//            isSaved.set(true); // Помечаем как сохраненное
-//            String userFileName = input.getText().toString().trim();
-//            if (userFileName.isEmpty()) {
-//                userFileName = defaultFileName;
-//            }
-//
-//            File finalFile = new File(getCacheDir(), userFileName + ".csv");
-//
-//            if (tempCsvFile.renameTo(finalFile)) {
-//                // Сохраняем в БД и показываем диалог отправки
-//                new DatabaseHelper(MainActivity.this).addRecord(userFileName, finalFile.getAbsolutePath());
-//                shareSavedFile(finalFile);
-//            } else {
-//                Toast.makeText(this, "Ошибка сохранения", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        builder.setNegativeButton("Отмена", (dialog, which) -> {
-//            // Удаляем временный файл при отмене
-//            if (tempCsvFile.exists()) {
-//                tempCsvFile.delete();
-//            }
-//            dialog.dismiss();
-//        });
-//
-//        AlertDialog dialog = builder.create();
-//
-//        // Обработчик закрытия диалога (клик вне окна/назад)
-//        dialog.setOnDismissListener(dialogInterface -> {
-//            if (!isSaved.get() && tempCsvFile.exists()) {
-//                // Автосохранение с именем по умолчанию
-//                String autoFileName = defaultFileName;
-//                File finalFile = new File(getCacheDir(), autoFileName + ".csv");
-//
-//                if (tempCsvFile.renameTo(finalFile)) {
-//                    new DatabaseHelper(MainActivity.this).addRecord(autoFileName, finalFile.getAbsolutePath());
-//                    Toast.makeText(this, "Автосохранено: " + autoFileName, Toast.LENGTH_LONG).show();
-//                }
-//            }
-//        });
-//
-//        dialog.show();
-//    }
-
-//    private void shareSavedFile(File file) {
-//        Uri fileUri = FileProvider.getUriForFile(this, "com.example.axel.provider", file);
-//
-//        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-//        shareIntent.setType("text/csv");
-//        shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-//        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//
-//        startActivity(Intent.createChooser(shareIntent, "Отправить файл через"));
-//    }
 
     @Override
     protected void onResume() {

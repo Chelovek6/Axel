@@ -6,6 +6,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
@@ -24,7 +25,10 @@ public class DataRecorder implements SensorEventListener {
     private long recordingStartTime;
     private Context context;
     private DataListener dataListener;
+
     private boolean isFFTEnabled = false;
+    private boolean isFFTRecording = false;
+    private float currentXfft, currentYfft, currentZfft;
 
     public interface DataListener {
         void onDataUpdated(float x, float y, float z, float totalAcceleration);
@@ -40,19 +44,30 @@ public class DataRecorder implements SensorEventListener {
     }
 
 
-    public void startRecording() {
+    public void startRecording(boolean isFFT) {
+        this.isFFTRecording = isFFT;
         recordingStartTime = System.currentTimeMillis();
         String fileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date()) + ".csv";
         tempCsvFile = new File(context.getCacheDir(), fileName);
 
         try {
             csvWriter = new FileWriter(tempCsvFile);
-            csvWriter.append("time;x;y;z;totalAcceleration\n");
+            csvWriter.append("Device: ").append(android.os.Build.MODEL).append("\n");
+            String serial = Build.SERIAL.isEmpty() ? "unknown" : Build.SERIAL;
+            csvWriter.append("Serial: ").append(serial).append("\n");
+            csvWriter.append("Date: ").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date())).append("\n");
+            if (isFFTRecording) {
+                csvWriter.append("time;x;xfft;y;yfft;z;zfft\n");
+            } else {
+                csvWriter.append("time;x;y;z;totalAcceleration\n");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        if (!isFFTRecording) {
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        }
     }
 
     public void stopRecording() {
@@ -100,6 +115,16 @@ public class DataRecorder implements SensorEventListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    public void writeFFTData(float x, float y, float z, float xfft, float yfft, float zfft) {
+        if (csvWriter != null && isFFTRecording) {
+            try {
+                double timeSinceStart = (System.currentTimeMillis() - recordingStartTime) / 1000.0;
+                String line = String.format(Locale.getDefault(), "%.3f;%.6f;%.6f;%.6f;%.6f;%.6f;%.6f\n",
+                        timeSinceStart, x, xfft, y, yfft, z, zfft);
+                csvWriter.append(line);
+            } catch (IOException e) { /* ... */ }
         }
     }
 

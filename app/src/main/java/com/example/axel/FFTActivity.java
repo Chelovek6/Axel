@@ -1,5 +1,6 @@
 package com.example.axel;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -16,6 +17,7 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +31,8 @@ public class FFTActivity extends AppCompatActivity implements SensorEventListene
     private final List<Float> averagedBufferX = new ArrayList<>();
     private final List<Float> averagedBufferY = new ArrayList<>();
     private final List<Float> averagedBufferZ = new ArrayList<>();
+    private DataRecorder dataRecorder;
+    private boolean isRecording = false;
 
     private TextView samplingRateText;
     private long previousTimestamp = 0;
@@ -60,6 +64,9 @@ public class FFTActivity extends AppCompatActivity implements SensorEventListene
 
         samplingRateText = findViewById(R.id.sampling_rate_text);
 
+        dataRecorder = new DataRecorder(this, null);
+        Button recordButton = findViewById(R.id.record_button);
+        recordButton.setOnClickListener(v -> toggleRecording());
         // Кнопка возврата
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
@@ -126,6 +133,32 @@ public class FFTActivity extends AppCompatActivity implements SensorEventListene
             }
         }
     }
+
+    private void toggleRecording() {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+        isRecording = !isRecording;
+        ((Button) findViewById(R.id.record_button)).setText(isRecording ? "■" : "▶");
+    }
+
+    private void startRecording() {
+        dataRecorder.startRecording(true);
+        Intent serviceIntent = new Intent(this, RecordingService.class);
+        serviceIntent.putExtra("isFFT", true);
+        startService(serviceIntent);
+    }
+
+    private void stopRecording() {
+        dataRecorder.stopRecording();
+        File tempFile = dataRecorder.getTempCsvFile();
+        if (tempFile != null) {
+            FileUtils.showSaveDialog(this, tempFile, true);
+        }
+        stopService(new Intent(this, RecordingService.class));
+    }
     private float calculateAverageFloat(List<Float> list) {
         float sum = 0;
         for (float val : list) sum += val;
@@ -174,6 +207,20 @@ public class FFTActivity extends AppCompatActivity implements SensorEventListene
         updateFFTChart(fftXChart, frequencies, fftX, Color.BLUE, "FFT X");
         updateFFTChart(fftYChart, frequencies, fftY, Color.RED, "FFT Y");
         updateFFTChart(fftZChart, frequencies, fftZ, Color.GREEN, "FFT Z");
+
+        float avgX = calculateAverage(bufferX) / 9.8f;
+        float avgY = calculateAverage(bufferY) / 9.8f;
+        float avgZ = calculateAverage(bufferZ) / 9.8f;
+        float xfft = getMaxAmplitude(fftX);
+        float yfft = getMaxAmplitude(fftY);
+        float zfft = getMaxAmplitude(fftZ);
+        dataRecorder.writeFFTData(avgX, avgY, avgZ, xfft, yfft, zfft);
+    }
+
+    private float getMaxAmplitude(float[] data) {
+        float max = 0;
+        for (float val : data) if (val > max) max = val;
+        return max;
     }
 
     private void updateRawChartsWithAveragedData() {

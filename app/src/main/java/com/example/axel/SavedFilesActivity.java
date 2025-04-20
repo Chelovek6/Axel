@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.PopupMenu;
@@ -61,6 +62,21 @@ public class SavedFilesActivity extends AppCompatActivity {
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
+
+                Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                        "SELECT " + DatabaseHelper.COLUMN_IS_FFT
+                                + " FROM " + DatabaseHelper.TABLE_RECORDS
+                                + " ORDER BY " + DatabaseHelper.COLUMN_ID
+                                + " LIMIT 1 OFFSET " + position, null
+                );
+
+                TextView fftTag = view.findViewById(R.id.tv_fft_tag);
+                if (cursor.moveToFirst() && cursor.getInt(0) == 1) {
+                    fftTag.setVisibility(View.VISIBLE);
+                } else {
+                    fftTag.setVisibility(View.GONE);
+                }
+                cursor.close();
 
                 ImageButton btnMenu = view.findViewById(R.id.btn_menu);
                 btnMenu.setOnClickListener(v -> showPopupMenu(v, position));
@@ -117,10 +133,12 @@ public class SavedFilesActivity extends AppCompatActivity {
 
     private void shareFile(int position) {
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT " + DatabaseHelper.COLUMN_PATH +
-                        " FROM " + DatabaseHelper.TABLE_RECORDS +
-                        " LIMIT 1 OFFSET " + position, null
+                "SELECT " + DatabaseHelper.COLUMN_IS_FFT
+                        + " FROM " + DatabaseHelper.TABLE_RECORDS
+                        + " ORDER BY " + DatabaseHelper.COLUMN_ID
+                        + " LIMIT 1 OFFSET " + position, null
         );
+
 
         if (cursor.moveToFirst()) {
             String path = cursor.getString(0);

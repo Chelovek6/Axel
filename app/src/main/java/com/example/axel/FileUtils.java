@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FileUtils {
 
-    public static void showSaveDialog(Activity activity, File tempCsvFile) {
+    public static void showSaveDialog(Activity activity, File tempCsvFile, boolean isFFT) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         String defaultFileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
 
@@ -38,8 +38,8 @@ public class FileUtils {
             File finalFile = new File(activity.getCacheDir(), userFileName + ".csv");
 
             if (tempCsvFile.renameTo(finalFile)) {
-                new DatabaseHelper(activity).addRecord(userFileName, finalFile.getAbsolutePath());
-                shareFile(activity, finalFile); // Используем существующий метод
+                new DatabaseHelper(activity).addRecord(userFileName, finalFile.getAbsolutePath(), isFFT);
+                shareFile(activity, finalFile);
             } else {
                 Toast.makeText(activity, "Ошибка сохранения", Toast.LENGTH_SHORT).show();
             }
@@ -55,7 +55,7 @@ public class FileUtils {
             if (!isSaved.get() && tempCsvFile.exists()) {
                 File finalFile = new File(activity.getCacheDir(), defaultFileName + ".csv");
                 if (tempCsvFile.renameTo(finalFile)) {
-                    new DatabaseHelper(activity).addRecord(defaultFileName, finalFile.getAbsolutePath());
+                    new DatabaseHelper(activity).addRecord(defaultFileName, finalFile.getAbsolutePath(), isFFT);
                     Toast.makeText(activity, "Автосохранено: " + defaultFileName, Toast.LENGTH_LONG).show();
                 }
             }
