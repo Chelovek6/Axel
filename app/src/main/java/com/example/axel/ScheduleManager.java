@@ -8,8 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.app.AlarmManager;
-import androidx.core.app.NotificationCompat;
+import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+import java.util.Calendar;
 import java.util.List;
 
 public class ScheduleManager {
@@ -34,7 +36,7 @@ public class ScheduleManager {
 
         for (Schedule schedule : schedules) {
             Intent intent = new Intent(context, ScheduleReceiver.class);
-            intent.putExtra("trigger_time", schedule.getStartTime());
+
             intent.putExtra("type", schedule.getType());
             intent.putExtra("duration", schedule.getDuration());
             intent.putExtra("schedule_id", schedule.getId());
@@ -46,7 +48,7 @@ public class ScheduleManager {
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
 
-            long triggerTime = schedule.getStartTime() - 5 * 60 * 1000;
+            long triggerTime = calculateTriggerTime(schedule);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(
@@ -61,6 +63,78 @@ public class ScheduleManager {
                         pendingIntent
                 );
             }
+        }
+    }
+
+    private long calculateTriggerTime(Schedule schedule) {
+        Calendar now = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(schedule.getStartTime());
+
+        // Устанавливаем часы и минуты из расписания
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
+        cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        // Для повторяющихся расписаний
+        if (!schedule.getDaysOfWeek().isEmpty()) {
+            String[] days = schedule.getDaysOfWeek().split(",");
+            int targetDay = convertToCalendarDay(Integer.parseInt(days[0].trim()));
+
+            // Находим ближайший выбранный день
+            int currentDay = now.get(Calendar.DAY_OF_WEEK);
+            int daysToAdd = (targetDay - currentDay + 7) % 7;
+            daysToAdd = daysToAdd == 0 ? 7 : daysToAdd; // Если сегодня - переходим на следующую неделю
+            cal.add(Calendar.DAY_OF_MONTH, daysToAdd);
+        }
+        // Для разовых расписаний
+        else if (cal.getTimeInMillis() <= now.getTimeInMillis()) {
+            // Если время уже прошло - планируем на завтра
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        return cal.getTimeInMillis();
+    }
+    private int convertToCalendarDay(int day) {
+        // Конвертируем из формата 1 (Пн) - 7 (Вс) в Calendar.DAY_OF_WEEK
+        return (day == 7) ? Calendar.SUNDAY : day + 1;
+    }
+
+    public void cancelAllAlarms() {
+        List<Schedule> schedules = dbHelper.getAllSchedules();
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        for (Schedule schedule : schedules) {
+            Intent intent = new Intent(context, ScheduleReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    schedule.getId(),
+                    intent,
+                    PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            if (pendingIntent != null) {
+                alarmManager.cancel(pendingIntent);
+                pendingIntent.cancel();
+            }
+        }
+    }
+
+
+    public void cancelAlarm(int scheduleId) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, ScheduleReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                scheduleId,
+                intent,
+                PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent);
+            pendingIntent.cancel();
         }
     }
 

@@ -64,7 +64,9 @@ public class ScheduleAdapter extends ArrayAdapter<Schedule> {
                         DatabaseHelper dbHelper = new DatabaseHelper(getContext());
                         dbHelper.deleteSchedule(schedule.getId());
                         remove(schedule);
+
                         notifyDataSetChanged();
+                        new ScheduleManager(getContext()).cancelAlarm(schedule.getId());
                         Toast.makeText(getContext(), "Расписание удалено", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("Нет", null)

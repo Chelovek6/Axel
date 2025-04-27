@@ -21,6 +21,8 @@ public class RecordingService extends Service {
     private File tempCsvFile;
     private Intent intent;
     private Handler handler = new Handler();
+    private boolean isFFT;
+    private int duration;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -36,7 +38,7 @@ public class RecordingService extends Service {
         dbHelper.addRecord(
                 fileName,
                 dataRecorder.getTempCsvFile().getAbsolutePath(),
-                intent.getBooleanExtra("isFFT", false)
+                this.isFFT
         );
 
         // Очистка временного файла
@@ -46,6 +48,11 @@ public class RecordingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        if (intent == null) return START_NOT_STICKY;
+
+        this.isFFT = intent.getBooleanExtra("isFFT", false);
+        this.duration = intent.getIntExtra("duration", 1);
         boolean isFFT = intent != null && intent.getBooleanExtra("isFFT", false);
         int duration = intent.getIntExtra("duration", 1);
 

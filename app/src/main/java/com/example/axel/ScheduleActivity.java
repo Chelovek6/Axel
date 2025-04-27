@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -13,6 +14,8 @@ import android.widget.TimePicker;
 import android.app.AlertDialog;
 import java.util.Calendar;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -22,13 +25,20 @@ public class ScheduleActivity extends AppCompatActivity {
     private ListView listView;
     private Button btnAdd;
     private DatabaseHelper dbHelper;
+    private Button btnClearDB;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkExactAlarmPermission();
         dbHelper = new DatabaseHelper(this);
         setContentView(R.layout.activity_schedule_main);
-
+        btnClearDB = findViewById(R.id.btn_clear_db);
+        btnClearDB.setOnClickListener(v -> {
+            new DatabaseHelper(this).deleteAllSchedules();
+            new ScheduleManager(this).cancelAllAlarms();
+            Toast.makeText(this, "All schedules cleared!", Toast.LENGTH_SHORT).show();
+            loadSchedules();
+        });
         scheduleManager = new ScheduleManager(this);
         listView = findViewById(R.id.list_schedules);
         btnAdd = findViewById(R.id.btn_add_schedule);
@@ -39,6 +49,7 @@ public class ScheduleActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        //scheduleManager.cancelAllAlarms(); Эта строчка убила 5 часов моей жизни
         new ScheduleManager(this).scheduleAllRecordings();
     }
 
@@ -57,6 +68,9 @@ public class ScheduleActivity extends AppCompatActivity {
             showScheduleEditor(schedule);
         });
     }
+
+
+
     private void checkExactAlarmPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -103,11 +117,12 @@ public class ScheduleActivity extends AppCompatActivity {
 
         builder.setPositiveButton("Сохранить", (dialog, which) -> {
             // Получение данных из формы
+
             Calendar cal = Calendar.getInstance();
             cal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
             cal.set(Calendar.MINUTE, timePicker.getMinute());
             long startTime = cal.getTimeInMillis();
-
+            Log.d("ScheduleDebug", "Setting time: " + startTime);
             StringBuilder daysBuilder = new StringBuilder();
             for (int i = 0; i < daysCheckboxes.length; i++) {
                 if (daysCheckboxes[i].isChecked()) {
@@ -125,12 +140,17 @@ public class ScheduleActivity extends AppCompatActivity {
                     etDescription.getText().toString(),
                     getIntent().getStringExtra("type"),
                     true
+
             );
+
 
             // Сохранение в БД
             new Thread(() -> {
                 if (schedule != null) newSchedule.setId(schedule.getId());
-                dbHelper.addSchedule(newSchedule);
+                long result = dbHelper.addSchedule(newSchedule);
+                if (result != -1) {
+                    new ScheduleManager(ScheduleActivity.this).scheduleAllRecordings();
+                }
                 runOnUiThread(this::loadSchedules);
             }).start();
         });

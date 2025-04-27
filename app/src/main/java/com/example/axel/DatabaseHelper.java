@@ -79,6 +79,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return records;
     }
 
+    public List<Schedule> getAllSchedules() {
+        List<Schedule> schedules = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_SCHEDULES;
+
+        try (Cursor cursor = db.rawQuery(query, null)) {
+            while (cursor.moveToNext()) {
+                Schedule schedule = new Schedule(
+                        cursor.getInt(0),
+                        cursor.getLong(1),
+                        cursor.getString(2),
+                        cursor.getInt(3),
+                        cursor.getString(4),
+                        cursor.getString(5),
+                        cursor.getInt(6) == 1
+                );
+                schedules.add(schedule);
+            }
+        }
+        return schedules;
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECORDS);
@@ -87,6 +109,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Создаём заново
         onCreate(db);
     }
+    public void deleteAllSchedules() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_SCHEDULES, null, null);
+        db.close();
+    }
+
     public void deleteRecord(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_RECORDS, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
