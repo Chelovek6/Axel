@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Кнопка добавления внизу экрана -->
+    <Button
+        android:id="@+id/btn_add_schedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Добавить расписание"
+        android:layout_alignParentBottom="true"/>
+
+    <!-- Список расписаний -->
+    <ListView
+        android:id="@+id/list_schedules"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/btn_add_schedule"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp"/>
+
+</RelativeLayout>

@@ -63,7 +63,12 @@ public class FFTActivity extends AppCompatActivity implements SensorEventListene
         fftZChart = findViewById(R.id.fft_z_chart);
 
         samplingRateText = findViewById(R.id.sampling_rate_text);
-
+        Button btnSchedule = findViewById(R.id.btn_schedule);
+        btnSchedule.setOnClickListener(v -> {
+            Intent intent = new Intent(FFTActivity.this, ScheduleActivity.class);
+            intent.putExtra("type", "fft");
+            startActivity(intent);
+        });
         dataRecorder = new DataRecorder(this, null);
         Button recordButton = findViewById(R.id.record_button);
         recordButton.setOnClickListener(v -> toggleRecording());

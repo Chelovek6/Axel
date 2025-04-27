@@ -8,12 +8,19 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
+import android.os.Handler;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class RecordingService extends Service {
 
     private DataRecorder dataRecorder;
     private static final String CHANNEL_ID = "RecordingServiceChannel";
-
+    private File tempCsvFile;
+    private Intent intent;
+    private Handler handler = new Handler();
     @Override
     public void onCreate() {
         super.onCreate();
@@ -21,9 +28,31 @@ public class RecordingService extends Service {
         createNotificationChannel();
     }
 
+    private void saveToDatabase() {
+        String fileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault())
+                .format(new Date());
+
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        dbHelper.addRecord(
+                fileName,
+                dataRecorder.getTempCsvFile().getAbsolutePath(),
+                intent.getBooleanExtra("isFFT", false)
+        );
+
+        // Очистка временного файла
+        tempCsvFile.delete();
+    }
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         boolean isFFT = intent != null && intent.getBooleanExtra("isFFT", false);
+        int duration = intent.getIntExtra("duration", 1);
+
+        new Handler().postDelayed(() -> {
+            stopRecording();
+            saveToDatabase();
+        }, duration * 60 * 1000);
 
         // Создаём уведомление для Foreground Service
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -44,6 +73,11 @@ public class RecordingService extends Service {
         sendBroadcast(resultIntent);
 
         return START_STICKY;
+    }
+
+    private void stopRecording() {
+        dataRecorder.stopRecording();
+        saveToDatabase();
     }
 
     @Override
@@ -68,4 +102,6 @@ public class RecordingService extends Service {
             manager.createNotificationChannel(serviceChannel);
         }
     }
+
+
 }

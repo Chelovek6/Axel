@@ -108,6 +108,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
+    <!-- Удалить -->
     <Button
         android:id="@+id/fft_button"
         android:layout_width="110dp"
@@ -116,12 +117,11 @@
         android:text="FFT"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/record_button"
-        app:layout_constraintHorizontal_bias="0.466"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.962" />
+        app:layout_constraintVertical_bias="0.964" />
 
-    <!-- Удалить -->
     <TextView
         android:id="@+id/sampling_rate_text"
         android:layout_width="wrap_content"
@@ -137,15 +137,30 @@
         app:layout_constraintVertical_bias="0.108" />
 
     <!-- Добавьте перед закрывающим тегом ConstraintLayout -->
+
     <Button
         android:id="@+id/btn_saved_files"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="94dp"
+        android:layout_height="59dp"
         android:text="Сохраненные файлы"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.742"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.956" />
+        app:layout_constraintVertical_bias="0.973" />
+
+    <Button
+        android:id="@+id/btn_schedule"
+        android:layout_width="121dp"
+        android:layout_height="55dp"
+        android:text="Расписание"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.393"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.967" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

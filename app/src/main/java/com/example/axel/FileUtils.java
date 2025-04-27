@@ -64,11 +64,24 @@ public class FileUtils {
         dialog.show();
     }
     public static void shareFile(Context context, File file) {
-        Uri uri = FileProvider.getUriForFile(context, "com.example.axel.provider", file);
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/csv");
-        intent.putExtra(Intent.EXTRA_STREAM, uri);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        context.startActivity(Intent.createChooser(intent, "Поделиться через"));
+        try {
+            Uri uri = FileProvider.getUriForFile(
+                    context,
+                    context.getApplicationContext().getPackageName() + ".provider",
+                    file
+            );
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/csv");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            //Intent chooser = Intent.createChooser(shareIntent, "Поделиться через");
+            //chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            context.startActivity(Intent.createChooser(shareIntent, "Поделиться через"));
+        } catch (Exception e) {
+            Toast.makeText(context, "Ошибка: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 }

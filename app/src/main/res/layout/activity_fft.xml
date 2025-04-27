@@ -75,6 +75,19 @@
             android:text="Назад"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"/>
+
+        <Button
+            android:id="@+id/btn_schedule"
+            android:layout_width="121dp"
+            android:layout_height="55dp"
+            android:text="Расписание"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.393"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.967" />
+
         <Button
             android:id="@+id/record_button"
             android:layout_width="wrap_content"
@@ -82,7 +95,6 @@
             android:text="▶"
             android:layout_marginTop="16dp"
             android:layout_gravity="center"/>
-
 
     </LinearLayout>
 

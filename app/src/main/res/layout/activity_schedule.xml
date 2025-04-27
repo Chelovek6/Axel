@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Время начала -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Время начала записи:"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <TimePicker
+            android:id="@+id/timePicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:timePickerMode="spinner"/>
+
+        <!-- Дни недели -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Дни недели:"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal">
+
+                <CheckBox android:id="@+id/mon" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Пн"/>
+                <CheckBox android:id="@+id/tue" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Вт"/>
+                <CheckBox android:id="@+id/wed" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Ср"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal">
+
+                <CheckBox android:id="@+id/thu" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Чт"/>
+                <CheckBox android:id="@+id/fri" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Пт"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal">
+
+                <CheckBox android:id="@+id/sat" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Сб"/>
+                <CheckBox android:id="@+id/sun" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Вс"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Длительность -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Длительность записи (минуты):"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/et_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="1"/>
+
+        <!-- Описание -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Описание:"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/et_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Введите описание расписания"
+            android:maxLength="100"/>
+
+    </LinearLayout>
+</ScrollView>

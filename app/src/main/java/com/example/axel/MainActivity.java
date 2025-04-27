@@ -66,7 +66,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //Частота
         fftBufferSize = prefs.getInt("BufferSize", 256);
 
-
+        Button btnSchedule = findViewById(R.id.btn_schedule);
+        btnSchedule.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ScheduleActivity.class);
+            intent.putExtra("type", "main");
+            startActivity(intent);
+        });
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         if (sensorManager != null) {
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

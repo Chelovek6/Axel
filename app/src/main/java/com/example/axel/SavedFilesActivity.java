@@ -121,7 +121,7 @@ public class SavedFilesActivity extends AppCompatActivity {
                 .setMessage("Удалить запись?")
                 .setPositiveButton("Да", (dialog, which) -> {
                     // Реальное удаление из БД
-                    dbHelper.deleteRecord(position + 1);
+                    dbHelper.deleteRecord(getRecordId(position));
 
                     // Обновление списка
                     records.remove(position);
@@ -130,20 +130,37 @@ public class SavedFilesActivity extends AppCompatActivity {
                 .setNegativeButton("Нет", null)
                 .show();
     }
+    private int getRecordId(int position) {
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT " + DatabaseHelper.COLUMN_ID +
+                        " FROM " + DatabaseHelper.TABLE_RECORDS +
+                        " LIMIT 1 OFFSET " + position, null);
+
+        int id = -1;
+        if (cursor.moveToFirst()) {
+            id = cursor.getInt(0);
+        }
+        cursor.close();
+        return id;
+    }
 
     private void shareFile(int position) {
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT " + DatabaseHelper.COLUMN_IS_FFT
-                        + " FROM " + DatabaseHelper.TABLE_RECORDS
-                        + " ORDER BY " + DatabaseHelper.COLUMN_ID
-                        + " LIMIT 1 OFFSET " + position, null
-        );
-
+                "SELECT " + DatabaseHelper.COLUMN_PATH + // Исправлено на COLUMN_PATH
+                        " FROM " + DatabaseHelper.TABLE_RECORDS +
+                        " ORDER BY " + DatabaseHelper.COLUMN_ID +
+                        " LIMIT 1 OFFSET " + position, null);
 
         if (cursor.moveToFirst()) {
             String path = cursor.getString(0);
             File file = new File(path);
-            FileUtils.shareFile(this, file);
+            if (file.exists()) {
+                FileUtils.shareFile(this, file);
+            } else {
+                Toast.makeText(this, "Файл не найден", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Ошибка доступа к записи", Toast.LENGTH_SHORT).show();
         }
         cursor.close();
     }
