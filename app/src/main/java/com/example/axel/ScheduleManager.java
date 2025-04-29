@@ -35,15 +35,69 @@ public class ScheduleManager {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         for (Schedule schedule : schedules) {
+            if (!schedule.isActive()) continue;
+
             if (schedule.getDaysOfWeek().isEmpty()) {
                 scheduleSingleRecording(alarmManager, schedule);
             } else {
                 String[] days = schedule.getDaysOfWeek().split(",");
-                for (String day : days) {
-                    scheduleRepeatingRecording(alarmManager, schedule, Integer.parseInt(day.trim()));
+                for (String dayStr : days) {
+                    try {
+                        int day = Integer.parseInt(dayStr.trim());
+                        scheduleWeeklyRecording(alarmManager, schedule, day);
+                    } catch (NumberFormatException e) {
+                        Log.e("ScheduleManager", "Invalid day format: " + dayStr);
+                    }
                 }
             }
         }
+    }
+
+    private void scheduleWeeklyRecording(AlarmManager alarmManager, Schedule schedule, int day) {
+        Calendar nextTrigger = calculateNextTrigger(schedule, day);
+        int uniqueId = schedule.getId() * 100 + day;
+
+        Intent intent = new Intent(context, ScheduleReceiver.class)
+                .putExtra("type", schedule.getType())
+                .putExtra("duration", schedule.getDuration())
+                .putExtra("schedule_id", uniqueId);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                uniqueId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                nextTrigger.getTimeInMillis(),
+                pendingIntent
+        );
+
+        Log.d("ScheduleDebug", "Scheduled: " + nextTrigger.getTime() + " Day: " + day);
+    }
+
+    private Calendar calculateNextTrigger(Schedule schedule, int targetDay) {
+        Calendar now = Calendar.getInstance();
+        Calendar nextTrigger = Calendar.getInstance();
+
+        // Set base time
+        nextTrigger.setTimeInMillis(schedule.getStartTime());
+        nextTrigger.set(Calendar.SECOND, 0);
+        nextTrigger.set(Calendar.MILLISECOND, 0);
+
+        // Adjust day
+        int currentDayOfWeek = now.get(Calendar.DAY_OF_WEEK);
+        int daysToAdd = (convertToCalendarDay(targetDay) - currentDayOfWeek);
+
+        if (daysToAdd < 0 ||
+                (daysToAdd == 0 && nextTrigger.getTimeInMillis() <= System.currentTimeMillis())) {
+            daysToAdd += 7;
+        }
+
+        nextTrigger.add(Calendar.DAY_OF_YEAR, daysToAdd);
+        return nextTrigger;
     }
 
     private void scheduleSingleRecording(AlarmManager alarmManager, Schedule schedule) {
