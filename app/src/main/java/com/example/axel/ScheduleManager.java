@@ -35,35 +35,76 @@ public class ScheduleManager {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         for (Schedule schedule : schedules) {
-            Intent intent = new Intent(context, ScheduleReceiver.class);
-
-            intent.putExtra("type", schedule.getType());
-            intent.putExtra("duration", schedule.getDuration());
-            intent.putExtra("schedule_id", schedule.getId());
-
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    schedule.getId(),
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-            );
-
-            long triggerTime = calculateTriggerTime(schedule);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        triggerTime,
-                        pendingIntent
-                );
+            if (schedule.getDaysOfWeek().isEmpty()) {
+                scheduleSingleRecording(alarmManager, schedule);
             } else {
-                alarmManager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        triggerTime,
-                        pendingIntent
-                );
+                String[] days = schedule.getDaysOfWeek().split(",");
+                for (String day : days) {
+                    scheduleRepeatingRecording(alarmManager, schedule, Integer.parseInt(day.trim()));
+                }
             }
         }
+    }
+
+    private void scheduleSingleRecording(AlarmManager alarmManager, Schedule schedule) {
+        Intent intent = new Intent(context, ScheduleReceiver.class);
+        intent.putExtra("type", schedule.getType());
+        intent.putExtra("duration", schedule.getDuration());
+        intent.putExtra("schedule_id", schedule.getId());
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                schedule.getId(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        long triggerTime = calculateTriggerTime(schedule);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+            );
+        } else {
+            alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+            );
+        }
+    }
+
+    private void scheduleRepeatingRecording(AlarmManager alarmManager, Schedule schedule, int day) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(schedule.getStartTime());
+        cal.set(Calendar.DAY_OF_WEEK, convertToCalendarDay(day));
+
+        // Если время уже прошло, добавляем неделю
+        if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
+            cal.add(Calendar.WEEK_OF_YEAR, 1);
+        }
+
+        Intent intent = new Intent(context, ScheduleReceiver.class);
+        intent.putExtra("type", schedule.getType());
+        intent.putExtra("duration", schedule.getDuration());
+        intent.putExtra("schedule_id", schedule.getId() * 10 + day); // Уникальный ID
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                schedule.getId() * 10 + day,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        // Установка повторяющегося будильника каждую неделю
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                cal.getTimeInMillis(),
+                AlarmManager.INTERVAL_DAY * 7,
+                pendingIntent
+        );
     }
 
     private long calculateTriggerTime(Schedule schedule) {
@@ -71,34 +112,41 @@ public class ScheduleManager {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(schedule.getStartTime());
 
-        // Устанавливаем часы и минуты из расписания
+        // Устанавливаем время из расписания
         cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
         cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        // Для повторяющихся расписаний
         if (!schedule.getDaysOfWeek().isEmpty()) {
             String[] days = schedule.getDaysOfWeek().split(",");
-            int targetDay = convertToCalendarDay(Integer.parseInt(days[0].trim()));
+            int firstDay = Integer.parseInt(days[0].trim());
 
-            // Находим ближайший выбранный день
-            int currentDay = now.get(Calendar.DAY_OF_WEEK);
-            int daysToAdd = (targetDay - currentDay + 7) % 7;
-            daysToAdd = daysToAdd == 0 ? 7 : daysToAdd; // Если сегодня - переходим на следующую неделю
-            cal.add(Calendar.DAY_OF_MONTH, daysToAdd);
-        }
-        // Для разовых расписаний
-        else if (cal.getTimeInMillis() <= now.getTimeInMillis()) {
-            // Если время уже прошло - планируем на завтра
-            cal.add(Calendar.DAY_OF_MONTH, 1);
+            // Конвертируем в Calendar.DAY_OF_WEEK
+            int targetDay = convertToCalendarDay(firstDay);
+
+            // Находим ближайший день
+            cal.set(Calendar.DAY_OF_WEEK, targetDay);
+            if (cal.before(now)) {
+                cal.add(Calendar.DAY_OF_YEAR, 7);
+            }
+        } else if (cal.before(now)) {
+            cal.add(Calendar.DAY_OF_YEAR, 1);
         }
 
         return cal.getTimeInMillis();
     }
     private int convertToCalendarDay(int day) {
-        // Конвертируем из формата 1 (Пн) - 7 (Вс) в Calendar.DAY_OF_WEEK
-        return (day == 7) ? Calendar.SUNDAY : day + 1;
+        switch(day) {
+            case 1: return Calendar.MONDAY;
+            case 2: return Calendar.TUESDAY;
+            case 3: return Calendar.WEDNESDAY;
+            case 4: return Calendar.THURSDAY;
+            case 5: return Calendar.FRIDAY;
+            case 6: return Calendar.SATURDAY;
+            case 7: return Calendar.SUNDAY;
+            default: throw new IllegalArgumentException("Invalid day: " + day);
+        }
     }
 
     public void cancelAllAlarms() {

@@ -75,10 +75,21 @@ public class ScheduleActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
             if (!am.canScheduleExactAlarms()) {
-                Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                startActivity(intent);
+                showPermissionRequestDialog();
             }
         }
+    }
+
+    private void showPermissionRequestDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Требуется разрешение")
+                .setMessage("Для работы расписания необходимо разрешение на точные будильники")
+                .setPositiveButton("Настройки", (d, w) -> {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Отмена", null)
+                .show();
     }
 
     private void showScheduleEditor(Schedule schedule) {
@@ -121,16 +132,18 @@ public class ScheduleActivity extends AppCompatActivity {
             Calendar cal = Calendar.getInstance();
             cal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
             cal.set(Calendar.MINUTE, timePicker.getMinute());
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
             long startTime = cal.getTimeInMillis();
-            Log.d("ScheduleDebug", "Setting time: " + startTime);
+
             StringBuilder daysBuilder = new StringBuilder();
             for (int i = 0; i < daysCheckboxes.length; i++) {
                 if (daysCheckboxes[i].isChecked()) {
-                    daysBuilder.append(i + 1).append(",");
+                    daysBuilder.append(i+1).append(","); // Сохраняем дни как 1-7
                 }
             }
             String days = daysBuilder.length() > 0 ?
-                    daysBuilder.substring(0, daysBuilder.length() - 1) : "";
+                    daysBuilder.substring(0, daysBuilder.length()-1) : "";
 
             Schedule newSchedule = new Schedule(
                     0,

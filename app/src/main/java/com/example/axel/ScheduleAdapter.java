@@ -77,9 +77,7 @@ public class ScheduleAdapter extends ArrayAdapter<Schedule> {
     }
 
     private String formatDays(String days) {
-        if (days == null || days.isEmpty()) {
-            return "Дни не выбраны";
-        }
+        if (days == null || days.isEmpty()) return "Дни не выбраны";
 
         String[] dayNumbers = days.split(",");
         String[] dayNames = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
@@ -87,17 +85,17 @@ public class ScheduleAdapter extends ArrayAdapter<Schedule> {
 
         for (String num : dayNumbers) {
             try {
-                int index = Integer.parseInt(num.trim()) - 1;
-                if (index >= 0 && index < 7) {
-                    result.append(dayNames[index]).append(", ");
+                int day = Integer.parseInt(num.trim());
+                if (day >= 1 && day <= 7) {
+                    result.append(dayNames[day-1]).append(", ");
                 }
             } catch (NumberFormatException e) {
-                Log.e("ScheduleAdapter", "Ошибка формата дня: " + num);
+                Log.e("ScheduleAdapter", "Invalid day format: " + num);
             }
         }
 
         return result.length() > 0 ?
-                result.substring(0, result.length() - 2) :
+                result.substring(0, result.length()-2) :
                 "Дни не выбраны";
     }
 }
