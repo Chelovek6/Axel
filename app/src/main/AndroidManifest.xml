@@ -59,7 +59,9 @@
 
         <service
             android:name=".RecordingService"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync"
+            android:exported="false"
+            android:stopWithTask="true"/>
         <receiver
             android:name=".NotificationReceiver"
             android:enabled="true"

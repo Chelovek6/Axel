@@ -9,7 +9,15 @@ import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 import android.os.Handler;
+import android.util.Log;
+import android.widget.Toast;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -31,25 +39,58 @@ public class RecordingService extends Service {
     }
 
     private void saveToDatabase() {
-        String fileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault())
-                .format(new Date());
+        try {
+            File tempFile = dataRecorder.getTempCsvFile();
+            if (tempFile == null || !tempFile.exists()) {
+                Log.e("RecordingService", "Temp file not found");
+                return;
+            }
 
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        dbHelper.addRecord(
-                fileName,
-                dataRecorder.getTempCsvFile().getAbsolutePath(),
-                this.isFFT
-        );
+            // Создаем постоянный файл во внешнем хранилище
+            File recordsDir = new File(getExternalFilesDir(null), "records");
+            if (!recordsDir.exists()) recordsDir.mkdirs();
 
-        // Очистка временного файла
-        tempCsvFile.delete();
+            String fileName = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault())
+                    .format(new Date()) + (isFFT ? "_fft" : "") + ".csv";
+
+            File permanentFile = new File(recordsDir, fileName);
+
+            // Копируем временный файл в постоянное хранилище
+            try (InputStream in = new FileInputStream(tempFile);
+                 OutputStream out = new FileOutputStream(permanentFile)) {
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
+
+            // Добавляем запись в БД
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            dbHelper.addRecord(
+                    fileName,
+                    permanentFile.getAbsolutePath(),
+                    isFFT
+            );
+
+            // Удаляем временный файл после успешного копирования
+            tempFile.delete();
+
+        } catch (IOException e) {
+            Log.e("RecordingService", "File save error", e);
+            Toast.makeText(this, "Error saving file", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if (intent == null) return START_NOT_STICKY;
+        if (intent == null) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
 
         this.isFFT = intent.getBooleanExtra("isFFT", false);
         this.duration = intent.getIntExtra("duration", 1);
@@ -85,6 +126,8 @@ public class RecordingService extends Service {
     private void stopRecording() {
         dataRecorder.stopRecording();
         saveToDatabase();
+        stopForeground(true);
+        stopSelf();
     }
 
     @Override

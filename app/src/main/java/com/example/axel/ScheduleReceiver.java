@@ -24,6 +24,11 @@ public class ScheduleReceiver extends BroadcastReceiver {
         } else {
             context.startService(serviceIntent);
         }
+
+        // Явно указываем, что событие обработано
+        if (isOrderedBroadcast()) {
+            abortBroadcast();
+        }
     }
 }
 

@@ -95,6 +95,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(5),
                         cursor.getInt(6) == 1
                 );
+                cursor.close(); // Добавить закрытие курсора
+                db.close();     // Закрыть базу
                 schedules.add(schedule);
             }
         }
