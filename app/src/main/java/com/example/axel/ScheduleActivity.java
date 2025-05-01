@@ -2,6 +2,8 @@ package com.example.axel;
 
 import android.app.AlarmManager;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +14,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TimePicker;
 import android.app.AlertDialog;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -55,10 +59,12 @@ public class ScheduleActivity extends AppCompatActivity {
 
     private void loadSchedules() {
         String type = getIntent().getStringExtra("type");
-        List<Schedule> schedules = dbHelper.getActiveSchedules(type);
+        List<Schedule> schedules = dbHelper.getAllSchedulesByType(type);
         ScheduleAdapter adapter = new ScheduleAdapter(this, schedules);
         listView.setAdapter(adapter);
     }
+
+
 
     private void setupListeners() {
         btnAdd.setOnClickListener(v -> showScheduleEditor(null));

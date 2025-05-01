@@ -52,7 +52,15 @@ public class ScheduleAdapter extends ArrayAdapter<Schedule> {
         switchActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
             DatabaseHelper dbHelper = new DatabaseHelper(getContext());
             schedule.setActive(isChecked);
-            dbHelper.updateSchedule(schedule); // Нужно добавить метод updateSchedule в DatabaseHelper
+            dbHelper.updateSchedule(schedule);
+
+            ScheduleManager scheduleManager = new ScheduleManager(getContext());
+            scheduleManager.cancelAlarmsForSchedule(schedule);
+            if (isChecked) {
+                scheduleManager.scheduleRecording(schedule);
+            }
+
+            notifyDataSetChanged();
         });
 
         // Кнопка удаления

@@ -52,7 +52,25 @@ public class ScheduleManager {
             }
         }
     }
+    public void scheduleRecording(Schedule schedule) {
+        if (!schedule.isActive()) return;
 
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        if (schedule.getDaysOfWeek().isEmpty()) {
+            scheduleSingleRecording(alarmManager, schedule);
+        } else {
+            String[] days = schedule.getDaysOfWeek().split(",");
+            for (String dayStr : days) {
+                try {
+                    int day = Integer.parseInt(dayStr.trim());
+                    scheduleWeeklyRecording(alarmManager, schedule, day);
+                } catch (NumberFormatException e) {
+                    Log.e("ScheduleManager", "Invalid day format: " + dayStr);
+                }
+            }
+        }
+    }
     private void scheduleWeeklyRecording(AlarmManager alarmManager, Schedule schedule, int day) {
         Calendar nextTrigger = calculateNextTrigger(schedule, day);
         int uniqueId = schedule.getId() * 100 + day;
@@ -98,6 +116,24 @@ public class ScheduleManager {
 
         nextTrigger.add(Calendar.DAY_OF_YEAR, daysToAdd);
         return nextTrigger;
+    }
+
+    public void cancelAlarmsForSchedule(Schedule schedule) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (schedule.getDaysOfWeek().isEmpty()) {
+            cancelAlarm(schedule.getId());
+        } else {
+            String[] days = schedule.getDaysOfWeek().split(",");
+            for (String dayStr : days) {
+                try {
+                    int day = Integer.parseInt(dayStr.trim());
+                    int uniqueId = schedule.getId() * 100 + day;
+                    cancelAlarm(uniqueId);
+                } catch (NumberFormatException e) {
+                    Log.e("ScheduleManager", "Invalid day format: " + dayStr);
+                }
+            }
+        }
     }
 
     private void scheduleSingleRecording(AlarmManager alarmManager, Schedule schedule) {

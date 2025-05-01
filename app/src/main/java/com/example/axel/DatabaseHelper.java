@@ -103,6 +103,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return schedules;
     }
 
+    public List<Schedule> getAllSchedulesByType(String type) {
+        List<Schedule> schedules = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + COLUMN_TYPE + " = ?";
+        try (Cursor cursor = db.rawQuery(query, new String[]{type})) {
+            while (cursor.moveToNext()) {
+                Schedule schedule = new Schedule(
+                        cursor.getInt(0),
+                        cursor.getLong(1),
+                        cursor.getString(2),
+                        cursor.getInt(3),
+                        cursor.getString(4),
+                        cursor.getString(5),
+                        cursor.getInt(6) == 1
+                );
+                schedules.add(schedule);
+            }
+        }
+        return schedules;
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECORDS);
