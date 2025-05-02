@@ -14,10 +14,13 @@ public class ScheduleReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String type = intent.getStringExtra("type");
         int duration = intent.getIntExtra("duration", 1);
+        int scheduleId = intent.getIntExtra("schedule_id", 0);
 
+        // Запускаем соответствующий тип записи
         Intent serviceIntent = new Intent(context, RecordingService.class);
         serviceIntent.putExtra("isFFT", "fft".equals(type));
         serviceIntent.putExtra("duration", duration);
+        serviceIntent.putExtra("schedule_id", scheduleId);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent);
@@ -25,7 +28,6 @@ public class ScheduleReceiver extends BroadcastReceiver {
             context.startService(serviceIntent);
         }
 
-        // Явно указываем, что событие обработано
         if (isOrderedBroadcast()) {
             abortBroadcast();
         }

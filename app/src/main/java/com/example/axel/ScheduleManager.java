@@ -78,7 +78,7 @@ public class ScheduleManager {
         Intent intent = new Intent(context, ScheduleReceiver.class)
                 .putExtra("type", schedule.getType())
                 .putExtra("duration", schedule.getDuration())
-                .putExtra("schedule_id", uniqueId);
+                .putExtra("schedule_id", schedule.getId());
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 context,

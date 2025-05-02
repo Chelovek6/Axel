@@ -118,13 +118,18 @@ public class DataRecorder implements SensorEventListener {
         }
     }
     public void writeFFTData(float x, float y, float z, float xfft, float yfft, float zfft) {
-        if (csvWriter != null && isFFTRecording) {
+        if (isFFTRecording && csvWriter != null) {
             try {
                 double timeSinceStart = (System.currentTimeMillis() - recordingStartTime) / 1000.0;
-                String line = String.format(Locale.getDefault(), "%.3f;%.6f;%.6f;%.6f;%.6f;%.6f;%.6f\n",
-                        timeSinceStart, x, xfft, y, yfft, z, zfft);
+                String line = String.format(Locale.getDefault(),
+                        "%.3f;%.6f;%.6f;%.6f;%.6f;%.6f;%.6f\n",
+                        timeSinceStart, x, xfft, y, yfft, z, zfft
+                );
                 csvWriter.append(line);
-            } catch (IOException e) { /* ... */ }
+                csvWriter.flush();
+            } catch (IOException e) {
+                Log.e("DataRecorder", "Error writing FFT data", e);
+            }
         }
     }
 
