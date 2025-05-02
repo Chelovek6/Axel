@@ -120,6 +120,7 @@ public class ScheduleManager {
 
     public void cancelAlarmsForSchedule(Schedule schedule) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
         if (schedule.getDaysOfWeek().isEmpty()) {
             cancelAlarm(schedule.getId());
         } else {

@@ -228,7 +228,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, schedule.getDescription());
         values.put(COLUMN_IS_ACTIVE, schedule.isActive() ? 1 : 0);
 
-        db.update(TABLE_SCHEDULES, values,
+        db.update(TABLE_SCHEDULES,
+                values,
                 COLUMN_SCHEDULE_ID + " = ?",
                 new String[]{String.valueOf(schedule.getId())});
         db.close();

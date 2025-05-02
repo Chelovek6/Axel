@@ -5,8 +5,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="12dp"
-    android:background="@drawable/bg_schedule_item">
-
+    android:background="@drawable/bg_schedule_item"
+    android:descendantFocusability="blocksDescendants">
     <!-- Первая строка: Время + Переключатель -->
     <LinearLayout
         android:layout_width="match_parent"

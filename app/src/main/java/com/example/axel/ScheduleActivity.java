@@ -123,18 +123,27 @@ public class ScheduleActivity extends AppCompatActivity {
             etDescription.setText(schedule.getDescription());
             etDuration.setText(String.valueOf(schedule.getDuration()));
 
+            // Сбрасываем все чекбоксы
+            for (CheckBox cb : daysCheckboxes) {
+                cb.setChecked(false);
+            }
+
+            // Устанавливаем выбранные дни
             String[] activeDays = schedule.getDaysOfWeek().split(",");
             for (String day : activeDays) {
-                int dayIndex = Integer.parseInt(day.trim()) - 1;
-                if (dayIndex >= 0 && dayIndex < 7) {
-                    daysCheckboxes[dayIndex].setChecked(true);
+                try {
+                    int dayIndex = Integer.parseInt(day.trim()) - 1;
+                    if (dayIndex >= 0 && dayIndex < 7) {
+                        daysCheckboxes[dayIndex].setChecked(true);
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e("ScheduleEditor", "Invalid day format: " + day);
                 }
             }
         }
 
         builder.setPositiveButton("Сохранить", (dialog, which) -> {
             // Получение данных из формы
-
             Calendar cal = Calendar.getInstance();
             cal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
             cal.set(Calendar.MINUTE, timePicker.getMinute());
@@ -145,31 +154,37 @@ public class ScheduleActivity extends AppCompatActivity {
             StringBuilder daysBuilder = new StringBuilder();
             for (int i = 0; i < daysCheckboxes.length; i++) {
                 if (daysCheckboxes[i].isChecked()) {
-                    daysBuilder.append(i+1).append(","); // Сохраняем дни как 1-7
+                    daysBuilder.append(i + 1).append(",");
                 }
             }
-            String days = daysBuilder.length() > 0 ?
-                    daysBuilder.substring(0, daysBuilder.length()-1) : "";
+            String days = daysBuilder.length() > 0
+                    ? daysBuilder.substring(0, daysBuilder.length() - 1)
+                    : "";
 
             Schedule newSchedule = new Schedule(
-                    0,
+                    schedule != null ? schedule.getId() : 0,
                     startTime,
                     days,
                     Integer.parseInt(etDuration.getText().toString()),
                     etDescription.getText().toString(),
                     getIntent().getStringExtra("type"),
                     true
-
             );
-
 
             // Сохранение в БД
             new Thread(() -> {
-                if (schedule != null) newSchedule.setId(schedule.getId());
-                long result = dbHelper.addSchedule(newSchedule);
-                if (result != -1) {
-                    new ScheduleManager(ScheduleActivity.this).scheduleAllRecordings();
+                DatabaseHelper db = new DatabaseHelper(ScheduleActivity.this);
+                if (schedule != null) {
+                    // Обновление существующего расписания
+                    db.updateSchedule(newSchedule);
+                    new ScheduleManager(ScheduleActivity.this)
+                            .cancelAlarmsForSchedule(schedule);
+                } else {
+                    // Создание нового расписания
+                    db.addSchedule(newSchedule);
                 }
+
+                new ScheduleManager(ScheduleActivity.this).scheduleAllRecordings();
                 runOnUiThread(this::loadSchedules);
             }).start();
         });
