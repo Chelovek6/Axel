@@ -1,11 +1,6 @@
 package com.example.axel;
 
 import android.content.Context;
-import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Build;
 import android.util.Log;
 
@@ -16,33 +11,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class DataRecorder implements SensorEventListener {
+public class DataRecorder{
 
-    private SensorManager sensorManager;
-    private Sensor accelerometer;
+    private boolean isFFTRecording = false;
     private FileWriter csvWriter;
     private File tempCsvFile;
-    private long recordingStartTime;
     private Context context;
-    private DataListener dataListener;
+    private long recordingStartTime;
 
-    private boolean isFFTEnabled = false;
-    private boolean isFFTRecording = false;
-    private float currentXfft, currentYfft, currentZfft;
 
-    public interface DataListener {
-        void onDataUpdated(float x, float y, float z, float totalAcceleration);
-    }
-
-    public DataRecorder(Context context, DataListener dataListener) {
+    public DataRecorder(Context context) {
         this.context = context;
-        this.dataListener = dataListener;
-        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        if (sensorManager != null) {
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        }
     }
-
 
     public void startRecording(boolean isFFT) {
         this.isFFTRecording = isFFT;
@@ -64,15 +44,9 @@ public class DataRecorder implements SensorEventListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        if (!isFFTRecording) {
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        }
     }
 
     public void stopRecording() {
-        sensorManager.unregisterListener(this);
-
         try {
             if (csvWriter != null) {
                 csvWriter.flush();
@@ -82,32 +56,9 @@ public class DataRecorder implements SensorEventListener {
             e.printStackTrace();
         }
     }
-    public void setFFTEnabled(boolean enabled) {
-        this.isFFTEnabled = enabled;
-    }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float x = event.values[0] / 9.8f;
-            float y = event.values[1] / 9.8f;
-            float z = event.values[2] / 9.8f;
-
-            float totalAcceleration = (float) Math.sqrt(x * x + y * y + z * z);
-
-            writeDataToCsv(x, y, z, totalAcceleration);
-
-            if (dataListener != null) {
-                dataListener.onDataUpdated(x, y, z, totalAcceleration);
-            }
-            if (!isFFTEnabled) { // Записываем только если фильтр выключен
-                writeDataToCsv(x, y, z, totalAcceleration);
-            }
-        }
-    }
-
-    private void writeDataToCsv(float x, float y, float z, float totalAcceleration) {
-        if (csvWriter != null) {
+    public void writeDataToCsv(float x, float y, float z, float totalAcceleration) {
+        if (csvWriter != null && !isFFTRecording) {
             try {
                 double timeSinceStart = (System.currentTimeMillis() - recordingStartTime) / 1000.0;
                 csvWriter.append(String.format(Locale.getDefault(), "%.3f;%.6f;%.6f;%.6f;%.6f\n",
@@ -117,6 +68,7 @@ public class DataRecorder implements SensorEventListener {
             }
         }
     }
+
     public void writeFFTData(float x, float y, float z, float xfft, float yfft, float zfft) {
         if (isFFTRecording && csvWriter != null) {
             try {
@@ -131,12 +83,6 @@ public class DataRecorder implements SensorEventListener {
                 Log.e("DataRecorder", "Error writing FFT data", e);
             }
         }
-    }
-
-
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     public File getTempCsvFile() {

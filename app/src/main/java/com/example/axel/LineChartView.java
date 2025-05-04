@@ -4,11 +4,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.graphics.Color;
 import com.github.mikephil.charting.charts.LineChart;
-
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-
 
 public class LineChartView extends LineChart {
 
@@ -27,7 +25,6 @@ public class LineChartView extends LineChart {
         setDragEnabled(true);
         setScaleEnabled(true);
 
-        // Создаем наборы данных
         createDataSets();
     }
 
@@ -65,7 +62,6 @@ public class LineChartView extends LineChart {
         addEntry(rawZSet, z);
         addEntry(rawTotalSet, total);
     }
-
 
     private void addEntry(LineDataSet dataSet, float value) {
         LineData data = getData();

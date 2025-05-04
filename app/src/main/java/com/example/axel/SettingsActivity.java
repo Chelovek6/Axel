@@ -13,8 +13,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     private SharedPreferences sharedPreferences;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,11 +22,6 @@ public class SettingsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-
-
-
-
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +46,6 @@ public class SettingsActivity extends AppCompatActivity {
             sharedPreferences.edit().putBoolean("KeepScreenOn", isChecked).apply();
         });
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

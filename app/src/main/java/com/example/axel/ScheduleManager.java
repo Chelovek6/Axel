@@ -7,9 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.app.AlarmManager;
 import android.util.Log;
-
 import androidx.core.app.NotificationCompat;
 import java.util.Calendar;
 import java.util.List;
@@ -167,37 +165,6 @@ public class ScheduleManager {
         }
     }
 
-    private void scheduleRepeatingRecording(AlarmManager alarmManager, Schedule schedule, int day) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(schedule.getStartTime());
-        cal.set(Calendar.DAY_OF_WEEK, convertToCalendarDay(day));
-
-        // Если время уже прошло, добавляем неделю
-        if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
-            cal.add(Calendar.WEEK_OF_YEAR, 1);
-        }
-
-        Intent intent = new Intent(context, ScheduleReceiver.class);
-        intent.putExtra("type", schedule.getType());
-        intent.putExtra("duration", schedule.getDuration());
-        intent.putExtra("schedule_id", schedule.getId() * 10 + day); // Уникальный ID
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                schedule.getId() * 10 + day,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        // Установка повторяющегося будильника каждую неделю
-        alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                cal.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY * 7,
-                pendingIntent
-        );
-    }
-
     private long calculateTriggerTime(Schedule schedule) {
         Calendar now = Calendar.getInstance();
         Calendar cal = Calendar.getInstance();
@@ -300,75 +267,6 @@ public class ScheduleManager {
                 .setAutoCancel(true);
 
         manager.notify((int) System.currentTimeMillis(), builder.build());
-    }
-
-    public void scheduleRecording(long triggerAt, int scheduleId, boolean isFFT, int duration) {
-        Intent recordingIntent = new Intent(context, ScheduleReceiver.class);
-        recordingIntent.putExtra("type", isFFT ? "fft" : "main");
-        recordingIntent.putExtra("duration", duration);
-        recordingIntent.putExtra("schedule_id", scheduleId);
-        recordingIntent.putExtra("trigger_time", triggerAt);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                scheduleId * 2 + 1,
-                recordingIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-        );
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    pendingIntent
-            );
-        } else {
-            alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    pendingIntent
-            );
-        }
-    }
-
-    public void scheduleNotification(long triggerAt, int scheduleId) {
-        Intent notificationIntent = new Intent(context, NotificationReceiver.class);
-        notificationIntent.putExtra("schedule_id", scheduleId);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                scheduleId * 2,
-                notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-        );
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    pendingIntent
-            );
-        } else {
-            alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    pendingIntent
-            );
-        }
-    }
-
-    public void startScheduledRecording(boolean isFFT, int duration) {
-        Intent serviceIntent = new Intent(context, RecordingService.class);
-        serviceIntent.putExtra("isFFT", isFFT);
-        serviceIntent.putExtra("duration", duration);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent);
-        } else {
-            context.startService(serviceIntent);
-        }
     }
 }
 

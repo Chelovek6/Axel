@@ -14,14 +14,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TimePicker;
 import android.app.AlertDialog;
-
-import java.util.ArrayList;
 import java.util.Calendar;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class ScheduleActivity extends AppCompatActivity {

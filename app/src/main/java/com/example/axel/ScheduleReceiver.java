@@ -4,10 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Looper;
-import android.os.Handler;
-import android.os.PowerManager;
-import android.util.Log;
 
 public class ScheduleReceiver extends BroadcastReceiver {
     @Override
