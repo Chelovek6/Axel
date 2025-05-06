@@ -9,12 +9,18 @@ import android.os.Bundle;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.android.material.navigation.NavigationView;
+
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private LineChartView lineChartView;
     private boolean isRecording = false;
     private TextView accelXText, accelYText, accelZText, accelTotalText;
@@ -26,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView samplingRateText;
     private boolean isFFTEnabled = false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +41,11 @@ public class MainActivity extends AppCompatActivity {
         fftBufferSize = prefs.getInt("BufferSize", 256);
         IntentFilter filter = new IntentFilter("com.example.axel.RECORDING_STARTED");
         registerReceiver(recordingStartedReceiver, filter);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
 
+        ImageView menuButton = findViewById(R.id.menu_button);
+        ImageButton scheduleButton = findViewById(R.id.schedule_button);
         lineChartView = findViewById(R.id.line_chart_view);
         accelXText = findViewById(R.id.accel_x);
         accelYText = findViewById(R.id.accel_y);
@@ -45,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         //Частота
         fftBufferSize = prefs.getInt("BufferSize", 256);
 
-        Button btnSchedule = findViewById(R.id.btn_schedule);
+        ImageButton btnSchedule = findViewById(R.id.schedule_button);
         btnSchedule.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, ScheduleActivity.class);
             intent.putExtra("type", "main");
@@ -78,30 +89,18 @@ public class MainActivity extends AppCompatActivity {
             public void onFFTDataProcessed(float[] fftX, float[] fftY, float[] fftZ) {
             }
         }, BUFFER_SIZE);
-
+        setupNavigation();
         dataRecorder = new DataRecorder(this);
 
-        ImageButton settingsButton = findViewById(R.id.settings_button);
-        settingsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivity(intent);
-
-            SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
-            boolean keepScreenOn = sharedPreferences.getBoolean("KeepScreenOn", false);
-
-            if (keepScreenOn) {
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            } else {
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            }
-        });
-        //na fft
-        Button fftButton = findViewById(R.id.fft_button);
-        fftButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, FFTActivity.class);
+        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        scheduleButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ScheduleActivity.class);
+            intent.putExtra("type", "main");
             startActivity(intent);
         });
-        //
+
+
+
         Button recordButton = findViewById(R.id.record_button);
         recordButton.setOnClickListener(v -> {
             if (isRecording) {
@@ -112,11 +111,19 @@ public class MainActivity extends AppCompatActivity {
                 recordButton.setText("■");
             }
         });
-        Button savedFilesButton = findViewById(R.id.btn_saved_files);
-        savedFilesButton.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, SavedFilesActivity.class));
-        });
 
+
+
+    }
+    @Override
+    protected int getLayoutId() {
+        return R.layout.activity_main;
+    }
+    @Override
+    protected void initViews() {
+        // Инициализация всех View-компонентов
+        ImageView menuButton = findViewById(R.id.menu_button);
+        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
     }
 
     private void startRecording() {

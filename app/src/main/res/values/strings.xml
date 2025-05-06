@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Axel</string>
+    <string name="menu_button_desc">Открыть меню навигации</string>
+    <string name="schedule_button_desc">Перейти к расписанию</string>
+    <string name="menu_desc">Открыть меню</string>
+    <string name="schedule_desc">Перейти к расписанию</string>
 </resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_accelerometer"
+        android:title="Акселерометр"/>
+    <item
+        android:id="@+id/nav_fft"
+        android:title="Фильтрация Фурье"/>
+    <item
+        android:id="@+id/nav_files"
+        android:title="Сохраненные файлы"/>
+    <item
+        android:id="@+id/nav_settings"
+        android:title="Настройки"
+        android:icon="@drawable/baseline_settings_24"/>
+</menu>
