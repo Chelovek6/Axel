@@ -5,9 +5,14 @@ import android.graphics.Color;
 import android.hardware.Sensor;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.github.mikephil.charting.data.Entry;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -15,7 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class FFTActivity extends AppCompatActivity {
+public class FFTActivity extends BaseActivity {
 
     private DataRecorder dataRecorder;
     private boolean isRecording = false;
@@ -29,7 +34,9 @@ public class FFTActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fft);
-
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        setupNavigation();
         // Инициализация графиков
         rawXChart = findViewById(R.id.raw_x_chart);
         rawYChart = findViewById(R.id.raw_y_chart);
@@ -39,7 +46,7 @@ public class FFTActivity extends AppCompatActivity {
         fftZChart = findViewById(R.id.fft_z_chart);
 
         samplingRateText = findViewById(R.id.sampling_rate_text);
-        Button btnSchedule = findViewById(R.id.btn_schedule);
+        ImageButton btnSchedule = findViewById(R.id.schedule_button);
         btnSchedule.setOnClickListener(v -> {
             Intent intent = new Intent(FFTActivity.this, ScheduleActivity.class);
             intent.putExtra("type", "fft");
@@ -48,9 +55,11 @@ public class FFTActivity extends AppCompatActivity {
         dataRecorder = new DataRecorder(this);
         Button recordButton = findViewById(R.id.record_button);
         recordButton.setOnClickListener(v -> toggleRecording());
-        // Кнопка возврата
-        Button backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> finish());
+        ImageView menuButton = findViewById(R.id.menu_button);
+        menuButton.setOnClickListener(v -> {
+            DrawerLayout drawer = findViewById(R.id.drawer_layout);
+            drawer.openDrawer(GravityCompat.START);
+        });
 
         // Инициализация сенсора
         sensorDataManager = new SensorDataManager(this, new SensorDataManager.SensorDataListener() {
@@ -94,6 +103,16 @@ public class FFTActivity extends AppCompatActivity {
         }
         isRecording = !isRecording;
         ((Button) findViewById(R.id.record_button)).setText(isRecording ? "■" : "▶");
+    }
+    @Override
+    protected int getLayoutId() {
+        return R.layout.activity_fft;
+    }
+    @Override
+    protected void initViews() {
+
+
+
     }
 
     private void startRecording() {

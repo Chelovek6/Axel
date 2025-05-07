@@ -26,9 +26,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             setupNavigation();
         }
 
-        initViews();
 
-        setupNavigation();
+
         initViews();
     }
 
@@ -41,6 +40,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
+        Log.d("NavigationDebug", "Clicked item ID: " + id);
         Class<?> target = null;
         String logMessage = "Selected item: ";
 
@@ -63,6 +63,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (target != null && !this.getClass().equals(target)) {
             Log.d("NavigationDebug", "Starting: " + target.getSimpleName());
             startActivity(new Intent(this, target));
+            finish();
         } else {
             Log.d("NavigationDebug", "Already on target");
         }
