@@ -24,20 +24,13 @@ public class ScheduleActivity extends AppCompatActivity {
     private ListView listView;
     private Button btnAdd;
     private DatabaseHelper dbHelper;
-    private Button btnClearDB;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkExactAlarmPermission();
         dbHelper = new DatabaseHelper(this);
         setContentView(R.layout.activity_schedule_main);
-        btnClearDB = findViewById(R.id.btn_clear_db);
-        btnClearDB.setOnClickListener(v -> {
-            new DatabaseHelper(this).deleteAllSchedules();
-            new ScheduleManager(this).cancelAllAlarms();
-            Toast.makeText(this, "All schedules cleared!", Toast.LENGTH_SHORT).show();
-            loadSchedules();
-        });
         scheduleManager = new ScheduleManager(this);
         listView = findViewById(R.id.list_schedules);
         btnAdd = findViewById(R.id.btn_add_schedule);

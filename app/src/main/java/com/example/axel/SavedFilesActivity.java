@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,32 +17,39 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
-public class SavedFilesActivity extends AppCompatActivity {
+public class SavedFilesActivity extends BaseActivity {
     private ListView listView;
     private DatabaseHelper dbHelper;
     private List<String> records;
     private int currentPage = 0;
     private static final int PAGE_SIZE = 15;
     private ArrayAdapter<String> adapter;
-    private Button btnPrev, btnNext;
-
+    private ImageButton btnPrev, btnNext;
+    private TextView tvPageInfo;
+    private LinearLayout paginationContainer;
+    private int totalPages = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saved_files);
 
-        Button backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> finish());
+
         dbHelper = new DatabaseHelper(this);
         listView = findViewById(R.id.listView);
-
-        //Страницы
         btnPrev = findViewById(R.id.btn_prev);
         btnNext = findViewById(R.id.btn_next);
+        tvPageInfo = findViewById(R.id.tv_page_info);
+        paginationContainer = findViewById(R.id.pagination_container);
+        //Страницы
+
         btnPrev.setOnClickListener(v -> {
             if (currentPage > 0) {
                 currentPage--;
@@ -48,9 +57,24 @@ public class SavedFilesActivity extends AppCompatActivity {
             }
         });
         btnNext.setOnClickListener(v -> {
-            currentPage++;
-            updatePage();
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updatePage();
+                updateButtonColors();
+            }
         });
+        //ffff
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        setupNavigation();
+        ImageView menuButton = findViewById(R.id.menu_button);
+
+        menuButton.setOnClickListener(v -> {
+            DrawerLayout drawer = findViewById(R.id.drawer_layout);
+            drawer.openDrawer(GravityCompat.START);
+        });
+        //fffff
+
         //Страницы
         // Загрузка данных
         records = dbHelper.getAllRecords();
@@ -84,12 +108,22 @@ public class SavedFilesActivity extends AppCompatActivity {
             }
         };
 
+        updatePagination();
         listView.setAdapter(adapter);
     }
     private void updatePage() {
         records = dbHelper.getRecordsPaginated(currentPage, PAGE_SIZE);
         adapter.clear();
         adapter.addAll(records);
+        updatePageInfo();
+    }
+
+    private void updateButtonColors() {
+        int activeColor = ContextCompat.getColor(this, R.color.pagination_enabled);
+        int inactiveColor = ContextCompat.getColor(this, R.color.pagination_disabled);
+
+        btnPrev.setColorFilter(currentPage > 0 ? activeColor : inactiveColor);
+        btnNext.setColorFilter(currentPage < totalPages - 1 ? activeColor : inactiveColor);
     }
     private void showPopupMenu(View anchor, int position) {
         PopupMenu popup = new PopupMenu(this, anchor);
@@ -112,6 +146,34 @@ public class SavedFilesActivity extends AppCompatActivity {
         });
 
         popup.show();
+    }
+
+    @Override
+    protected int getLayoutId() {
+        return R.layout.activity_saved_files;
+    }
+    @Override
+    protected void initViews() {
+
+    }
+
+    private void updatePagination() {
+        int totalRecords = dbHelper.getRecordsCount();
+        totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+
+        // Скрыть пагинацию если записей меньше PAGE_SIZE
+        if(totalPages <= 1) {
+            paginationContainer.setVisibility(View.GONE);
+        } else {
+            paginationContainer.setVisibility(View.VISIBLE);
+            updatePageInfo();
+        }
+    }
+
+    private void updatePageInfo() {
+        String pageText = (currentPage + 1) + " / " + totalPages;
+        tvPageInfo.setText(pageText);
+        updateButtonColors();
     }
 
     private void deleteRecord(int position) {

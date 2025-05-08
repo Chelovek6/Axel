@@ -6,10 +6,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
 
     private SharedPreferences sharedPreferences;
 
@@ -22,14 +25,16 @@ public class SettingsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        setupNavigation();
+        ImageView menuButton = findViewById(R.id.menu_button);
 
-        Button backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
+        menuButton.setOnClickListener(v -> {
+            DrawerLayout drawer = findViewById(R.id.drawer_layout);
+            drawer.openDrawer(GravityCompat.START);
         });
+
         CheckBox keepScreenOnCheckBox = findViewById(R.id.keep_screen_on);
         keepScreenOnCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
@@ -45,6 +50,14 @@ public class SettingsActivity extends AppCompatActivity {
         checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             sharedPreferences.edit().putBoolean("KeepScreenOn", isChecked).apply();
         });
+    }
+    @Override
+    protected int getLayoutId() {
+        return R.layout.activity_saved_files;
+    }
+    @Override
+    protected void initViews() {
+
     }
 
     @Override

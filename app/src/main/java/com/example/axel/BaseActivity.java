@@ -26,8 +26,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             setupNavigation();
         }
 
-
-
         initViews();
     }
 
