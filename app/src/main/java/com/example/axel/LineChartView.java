@@ -1,12 +1,17 @@
 package com.example.axel;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.graphics.Color;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+
+import java.util.Locale;
 
 public class LineChartView extends LineChart {
 
@@ -15,18 +20,48 @@ public class LineChartView extends LineChart {
 
     public LineChartView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
         initChart();
     }
 
     private void initChart() {
+
         // Настройки графика
         getDescription().setEnabled(false);
         setTouchEnabled(true);
-        setDragEnabled(true);
+        setDragEnabled(false);
         setScaleEnabled(true);
+        setPinchZoom(true);
+        setAutoScaleMinMaxEnabled(true);
 
-        createDataSets();
+
+        createDataSets();getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM); // Подпись снизу
+        getXAxis().setTextColor(Color.GRAY);
+        getXAxis().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return String.format(Locale.getDefault(), "%.1f с", value/150f); // Пример: 10 точек = 1 секунда
+            }
+        });
+
+        // Левая ось Y
+        getAxisLeft().setTextColor(Color.GRAY);
+        getAxisLeft().setAxisMinimum(-20f);
+        getAxisLeft().setAxisMaximum(20f);
+        getAxisLeft().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return String.format(Locale.getDefault(), "%.1f ", value);
+            }
+        });
+
+        // Правая ось - отключаем
+        getAxisRight().setEnabled(false);
+
+        // Убираем легенду
+        getLegend().setEnabled(false);
     }
+
 
     private void createDataSets() {
         // Исходные данные (полупрозрачные)
@@ -71,6 +106,10 @@ public class LineChartView extends LineChart {
             notifyDataSetChanged();
             setVisibleXRangeMaximum(100);
             moveViewToX(data.getEntryCount());
+            setVisibleXRangeMaximum(100);
+            moveViewToX(data.getEntryCount());
+            getAxisLeft().resetAxisMinimum();
+            getAxisLeft().resetAxisMaximum();
         }
     }
 }

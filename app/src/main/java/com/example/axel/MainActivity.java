@@ -70,7 +70,7 @@ public class MainActivity extends BaseActivity {
                 accelXText.setText(String.format("x=%.6f", x));
                 accelYText.setText(String.format(" y=%.6f", y));
                 accelZText.setText(String.format(" z=%.6f", z));
-                accelTotalText.setText(String.format(" ОУ=%.6f", total));
+                accelTotalText.setText(String.format(" Общее ускорение=%.6f", total));
 
                 // Если нужно сохранять данные
                 if(isRecording) {
