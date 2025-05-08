@@ -63,6 +63,25 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/keep_screen_on"/>
+        <TextView
+            android:id="@+id/text_accelerometer_frequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/accelerometer_frequency_title"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:textColor="#FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/btn_check_accelerometer"/>
+
+        <Spinner
+            android:id="@+id/spinner_accelerometer_frequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@id/text_accelerometer_frequency"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

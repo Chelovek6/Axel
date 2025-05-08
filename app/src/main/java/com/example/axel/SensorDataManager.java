@@ -1,5 +1,6 @@
 package com.example.axel;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -33,7 +34,7 @@ public class SensorDataManager implements SensorEventListener {
     public float getLastX() { return lastX; }
     public float getLastY() { return lastY; }
     public float getLastZ() { return lastZ; }
-
+    private final Context context;
     //буферы для FFT
     private final List<Float> fftBufferX = new ArrayList<>();
     private final List<Float> fftBufferY = new ArrayList<>();
@@ -45,6 +46,7 @@ public class SensorDataManager implements SensorEventListener {
     }
 
     public SensorDataManager(Context context, SensorDataListener listener, int bufferSize) {
+        this.context = context.getApplicationContext();
         this.sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         this.listener = listener;
@@ -61,8 +63,12 @@ public class SensorDataManager implements SensorEventListener {
     }
 
     public void registerListener() {
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        SharedPreferences prefs = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE);
+        int delay = prefs.getInt("accelerometer_delay", SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.unregisterListener(this);
+        sensorManager.registerListener(this, accelerometer, delay);
     }
+
 
     public void unregisterListener() {
         sensorManager.unregisterListener(this);
