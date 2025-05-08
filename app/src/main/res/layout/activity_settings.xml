@@ -54,6 +54,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/header"/>
+        <Button
+            android:id="@+id/btn_check_accelerometer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="Проверка акселерометра"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/keep_screen_on"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
