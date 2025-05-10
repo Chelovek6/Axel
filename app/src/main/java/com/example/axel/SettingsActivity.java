@@ -97,13 +97,6 @@ public class SettingsActivity extends BaseActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        // Стилизация для темной темы
-        TextView textView = dialog.findViewById(android.R.id.message);
-        if (textView != null) {
-            textView.setTextColor(ContextCompat.getColor(this,
-                    (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
-                            == Configuration.UI_MODE_NIGHT_YES ? android.R.color.white : android.R.color.black));
-        }
     }
 
     private void setupFrequencySpinner() {

@@ -1,13 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Axel" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base application theme -->
+    <style name="Theme.Axel" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary brand color -->
         <item name="colorPrimary">@color/app_primary_color</item>
         <item name="colorPrimaryDark">@color/app_primary_color</item>
         <item name="colorAccent">@color/app_primary_color</item>
 
-    </style>
+        <!-- Status bar customization -->
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
 
-    <style name="Theme.Axel" parent="Base.Theme.Axel" />
+        <!-- Navigation bar customization (for API 27+) -->
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <!-- Disable forced dark mode (for API 29+) -->
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+    </style>
 </resources>

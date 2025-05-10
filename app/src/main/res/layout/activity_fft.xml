@@ -115,7 +115,7 @@
                         android:textColor="#0000FF"
                         android:textSize="18sp"/>
 
-                    <com.github.mikephil.charting.charts.LineChart
+                    <com.example.axel.LineChartView
                         android:id="@+id/raw_x_chart"
                         android:layout_width="match_parent"
                         android:layout_height="240dp"
@@ -142,7 +142,7 @@
                         android:textColor="#FF0000"
                         android:textSize="18sp"/>
 
-                    <com.github.mikephil.charting.charts.LineChart
+                    <com.example.axel.LineChartView
                         android:id="@+id/raw_y_chart"
                         android:layout_width="match_parent"
                         android:layout_height="240dp"
@@ -168,7 +168,7 @@
                         android:textColor="#00FF00"
                         android:textSize="18sp"/>
 
-                    <com.github.mikephil.charting.charts.LineChart
+                    <com.example.axel.LineChartView
                         android:id="@+id/raw_z_chart"
                         android:layout_width="match_parent"
                         android:layout_height="240dp"

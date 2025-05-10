@@ -36,7 +36,7 @@ public class LineChartView extends LineChart {
 
 
         createDataSets();getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM); // Подпись снизу
-        getXAxis().setTextColor(Color.GRAY);
+        getXAxis().setTextColor(Color.BLACK);
         getXAxis().setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
@@ -45,7 +45,7 @@ public class LineChartView extends LineChart {
         });
 
         // Левая ось Y
-        getAxisLeft().setTextColor(Color.GRAY);
+        getAxisLeft().setTextColor(Color.BLACK);
         getAxisLeft().setAxisMinimum(-20f);
         getAxisLeft().setAxisMaximum(20f);
         getAxisLeft().setValueFormatter(new ValueFormatter() {
