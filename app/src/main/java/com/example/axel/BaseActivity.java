@@ -1,9 +1,11 @@
 package com.example.axel;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -27,6 +29,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
 
         initViews();
+        applyKeepScreenOnSetting();
     }
 
     protected abstract int getLayoutId();
@@ -34,6 +37,17 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected void setupNavigation() {
         navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
+    }
+
+    protected void applyKeepScreenOnSetting() {
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        boolean keepScreenOn = prefs.getBoolean("KeepScreenOn", false);
+
+        if (keepScreenOn) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     private boolean onNavigationItemSelected(MenuItem item) {

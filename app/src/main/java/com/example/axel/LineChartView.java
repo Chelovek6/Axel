@@ -40,14 +40,14 @@ public class LineChartView extends LineChart {
         getXAxis().setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                return String.format(Locale.getDefault(), "%.1f с", value/150f); // Пример: 10 точек = 1 секунда
+                return String.format(Locale.getDefault(), "%.1f с", value/170f);
             }
         });
 
         // Левая ось Y
         getAxisLeft().setTextColor(Color.BLACK);
-        getAxisLeft().setAxisMinimum(-20f);
-        getAxisLeft().setAxisMaximum(20f);
+        getAxisLeft().setAxisMinimum(-2f);
+        getAxisLeft().setAxisMaximum(2f);
         getAxisLeft().setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {

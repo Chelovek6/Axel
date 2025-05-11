@@ -113,9 +113,13 @@ public class SavedFilesActivity extends BaseActivity {
     }
     private void updatePage() {
         records = dbHelper.getRecordsPaginated(currentPage, PAGE_SIZE);
+        if(records.isEmpty() && currentPage > 0) {
+            currentPage--;
+            records = dbHelper.getRecordsPaginated(currentPage, PAGE_SIZE);
+        }
         adapter.clear();
         adapter.addAll(records);
-        updatePageInfo();
+        updateButtonColors();
     }
 
     private void updateButtonColors() {
@@ -161,14 +165,16 @@ public class SavedFilesActivity extends BaseActivity {
         int totalRecords = dbHelper.getRecordsCount();
         totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
 
-        // Скрыть пагинацию если записей меньше PAGE_SIZE
-        if(totalPages <= 1) {
-            paginationContainer.setVisibility(View.GONE);
-        } else {
-            paginationContainer.setVisibility(View.VISIBLE);
-            updatePageInfo();
+        // Корректируем текущую страницу если она стала невалидной
+        if(totalPages > 0 && currentPage >= totalPages) {
+            currentPage = totalPages - 1;
         }
+
+        // Обновляем видимость пагинации
+        paginationContainer.setVisibility(totalPages > 1 ? View.VISIBLE : View.GONE);
+        updatePageInfo();
     }
+
 
     private void updatePageInfo() {
         String pageText = (currentPage + 1) + " / " + totalPages;
@@ -181,21 +187,29 @@ public class SavedFilesActivity extends BaseActivity {
                 .setTitle("Удаление")
                 .setMessage("Удалить запись?")
                 .setPositiveButton("Да", (dialog, which) -> {
-                    // Реальное удаление из БД
-                    dbHelper.deleteRecord(getRecordId(position));
+                    // Получаем ID с учетом текущей страницы
+                    int recordId = getRecordId(position);
+                    if(recordId == -1) return;
 
-                    // Обновление списка
-                    records.remove(position);
-                    ((ArrayAdapter)listView.getAdapter()).notifyDataSetChanged();
+                    // Удаляем запись из БД
+                    dbHelper.deleteRecord(recordId);
+
+                    // Полностью перезагружаем данные
+                    updatePagination();
+                    updatePage();
                 })
                 .setNegativeButton("Нет", null)
                 .show();
     }
     private int getRecordId(int position) {
+        // Рассчитываем общий offset с учетом текущей страницы
+        int offset = currentPage * PAGE_SIZE + position;
+
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
                 "SELECT " + DatabaseHelper.COLUMN_ID +
                         " FROM " + DatabaseHelper.TABLE_RECORDS +
-                        " LIMIT 1 OFFSET " + position, null);
+                        " ORDER BY " + DatabaseHelper.COLUMN_ID +
+                        " LIMIT 1 OFFSET " + offset, null);
 
         int id = -1;
         if (cursor.moveToFirst()) {
@@ -204,6 +218,7 @@ public class SavedFilesActivity extends BaseActivity {
         cursor.close();
         return id;
     }
+
 
     private void shareFile(int position) {
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(

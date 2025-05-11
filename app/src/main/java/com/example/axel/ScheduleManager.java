@@ -98,8 +98,14 @@ public class ScheduleManager {
         Calendar now = Calendar.getInstance();
         Calendar nextTrigger = Calendar.getInstance();
 
-        // Set base time
+        Calendar scheduleCal = Calendar.getInstance();
+        scheduleCal.setTimeInMillis(schedule.getStartTime());
+        int hour = scheduleCal.get(Calendar.HOUR_OF_DAY);
+        int minute = scheduleCal.get(Calendar.MINUTE);
         nextTrigger.setTimeInMillis(schedule.getStartTime());
+
+        nextTrigger.set(Calendar.HOUR_OF_DAY, hour);
+        nextTrigger.set(Calendar.MINUTE, minute);
         nextTrigger.set(Calendar.SECOND, 0);
         nextTrigger.set(Calendar.MILLISECOND, 0);
 
@@ -113,6 +119,9 @@ public class ScheduleManager {
         }
 
         nextTrigger.add(Calendar.DAY_OF_YEAR, daysToAdd);
+        while (nextTrigger.before(now)) {
+            nextTrigger.add(Calendar.DAY_OF_YEAR, 7);
+        }
         return nextTrigger;
     }
 
@@ -168,19 +177,21 @@ public class ScheduleManager {
     private long calculateTriggerTime(Schedule schedule) {
         Calendar now = Calendar.getInstance();
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(schedule.getStartTime());
 
-        // Устанавливаем время из расписания
-        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
-        cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
+        Calendar scheduleCal = Calendar.getInstance();
+        scheduleCal.setTimeInMillis(schedule.getStartTime());
+
+        int hour = scheduleCal.get(Calendar.HOUR_OF_DAY);
+        int minute = scheduleCal.get(Calendar.MINUTE);
+
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
         if (!schedule.getDaysOfWeek().isEmpty()) {
             String[] days = schedule.getDaysOfWeek().split(",");
             int firstDay = Integer.parseInt(days[0].trim());
-
-            // Конвертируем в Calendar.DAY_OF_WEEK
             int targetDay = convertToCalendarDay(firstDay);
 
             // Находим ближайший день
@@ -188,7 +199,7 @@ public class ScheduleManager {
             if (cal.before(now)) {
                 cal.add(Calendar.DAY_OF_YEAR, 7);
             }
-        } else if (cal.before(now)) {
+        } while (cal.before(now)) {
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
 
