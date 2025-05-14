@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;

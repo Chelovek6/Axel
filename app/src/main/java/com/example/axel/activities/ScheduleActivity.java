@@ -1,9 +1,7 @@
-package com.example.axel;
+package com.example.axel.activities;
 
 import android.app.AlarmManager;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,8 +13,15 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 import android.app.AlertDialog;
 import java.util.Calendar;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.axel.utils.DatabaseHelper;
+import com.example.axel.R;
+import com.example.axel.models.Schedule;
+import com.example.axel.adapters.ScheduleAdapter;
+import com.example.axel.managers.ScheduleManager;
+
 import java.util.List;
 
 public class ScheduleActivity extends AppCompatActivity {

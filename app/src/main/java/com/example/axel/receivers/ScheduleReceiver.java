@@ -1,9 +1,11 @@
-package com.example.axel;
+package com.example.axel.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+
+import com.example.axel.services.RecordingService;
 
 public class ScheduleReceiver extends BroadcastReceiver {
     @Override

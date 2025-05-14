@@ -1,3 +1,8 @@
+# Фикс для JTransforms
+-keep class pl.edu.icm.jlargearrays.** { *; }
+-dontwarn sun.misc.**
+
+
 # Add project specific ProGuard rules here.
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
@@ -19,3 +24,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Удаление логов
+# Правила для JTransforms
+-keep class pl.edu.icm.jlargearrays.** { *; }
+-keep class org.jtransforms.** { *; }
+
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+}

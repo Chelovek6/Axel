@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.utils;
 
 import org.jtransforms.fft.FloatFFT_1D;
 

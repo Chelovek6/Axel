@@ -26,7 +26,7 @@
         <activity
 
 
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
 
@@ -35,23 +35,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".DatabaseHelper" />
-        <activity android:name=".SavedFilesActivity" />
-        <activity android:name=".FileUtils" />
+        <activity android:name=".activities.SettingsActivity" />
+
+        <activity android:name=".activities.SavedFilesActivity" />
+
         <activity
-            android:name=".ScheduleActivity"
+            android:name=".activities.ScheduleActivity"
             android:exported="false" />
-        <service
-            android:name=".SensorDataManager"
-            android:exported="false"/>
+
         <activity
-            android:name=".FFTActivity"
+            android:name=".activities.FFTActivity"
             android:label="FFT Analysis"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".activities.MainActivity" />
 
         <receiver
-            android:name=".BootReceiver"
+            android:name=".receivers.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -60,12 +58,12 @@
         </receiver>
 
         <service
-            android:name=".RecordingService"
+            android:name=".services.RecordingService"
             android:foregroundServiceType="dataSync"
             android:exported="false"
             android:stopWithTask="true"/>
         <receiver
-            android:name=".ScheduleReceiver"
+            android:name=".receivers.ScheduleReceiver"
             android:enabled="true"
             android:exported="false"/>
 

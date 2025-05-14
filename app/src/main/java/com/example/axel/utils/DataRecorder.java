@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.utils;
 
 import android.content.Context;
 import android.os.Build;

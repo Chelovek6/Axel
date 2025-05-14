@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.managers;
 
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -9,6 +9,11 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
+
+import com.example.axel.utils.DatabaseHelper;
+import com.example.axel.models.Schedule;
+import com.example.axel.receivers.ScheduleReceiver;
+
 import java.util.Calendar;
 import java.util.List;
 

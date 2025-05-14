@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -11,6 +11,11 @@ import androidx.core.app.NotificationCompat;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.axel.utils.DataRecorder;
+import com.example.axel.utils.DatabaseHelper;
+import com.example.axel.managers.SensorDataManager;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

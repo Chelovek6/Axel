@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.adapters;
 
 import android.content.Context;
 import android.util.Log;
@@ -11,6 +11,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.AlertDialog;
+
+import com.example.axel.utils.DatabaseHelper;
+import com.example.axel.R;
+import com.example.axel.models.Schedule;
+import com.example.axel.managers.ScheduleManager;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;

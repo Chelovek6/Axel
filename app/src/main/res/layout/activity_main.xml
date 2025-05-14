@@ -6,7 +6,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -102,7 +102,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Chart Section -->
-        <com.example.axel.LineChartView
+        <com.example.axel.views.LineChartView
             android:id="@+id/line_chart_view"
             android:layout_width="0dp"
             android:layout_height="0dp"

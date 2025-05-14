@@ -1,10 +1,14 @@
-package com.example.axel;
+package com.example.axel.managers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+
+import com.example.axel.utils.DataRecorder;
+import com.example.axel.utils.FFTProcessor;
+
 import java.util.ArrayList;
 import java.util.List;
 

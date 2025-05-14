@@ -1,11 +1,10 @@
-package com.example.axel;
+package com.example.axel.activities;
 
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,14 +15,16 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.axel.utils.DatabaseHelper;
+import com.example.axel.utils.FileUtils;
+import com.example.axel.R;
+
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 public class SavedFilesActivity extends BaseActivity {
     private ListView listView;

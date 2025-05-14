@@ -1,7 +1,6 @@
-package com.example.axel;
+package com.example.axel.views;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.graphics.Color;
 import com.github.mikephil.charting.charts.LineChart;

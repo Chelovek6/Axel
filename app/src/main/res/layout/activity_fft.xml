@@ -6,7 +6,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FFTActivity">
+    tools:context=".activities.FFTActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -115,7 +115,7 @@
                         android:textColor="#0000FF"
                         android:textSize="18sp"/>
 
-                    <com.example.axel.LineChartView
+                    <com.example.axel.views.LineChartView
                         android:id="@+id/raw_x_chart"
                         android:layout_width="match_parent"
                         android:layout_height="240dp"
@@ -142,7 +142,7 @@
                         android:textColor="#FF0000"
                         android:textSize="18sp"/>
 
-                    <com.example.axel.LineChartView
+                    <com.example.axel.views.LineChartView
                         android:id="@+id/raw_y_chart"
                         android:layout_width="match_parent"
                         android:layout_height="240dp"
@@ -168,7 +168,7 @@
                         android:textColor="#00FF00"
                         android:textSize="18sp"/>
 
-                    <com.example.axel.LineChartView
+                    <com.example.axel.views.LineChartView
                         android:id="@+id/raw_z_chart"
                         android:layout_width="match_parent"
                         android:layout_height="240dp"

@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.models;
 
 public class Schedule {
     private int id;

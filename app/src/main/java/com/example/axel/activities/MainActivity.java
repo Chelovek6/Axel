@@ -1,4 +1,4 @@
-package com.example.axel;
+package com.example.axel.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,17 +6,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.material.navigation.NavigationView;
+import androidx.core.view.GravityCompat;
+
+import com.example.axel.utils.DataRecorder;
+import com.example.axel.utils.FileUtils;
+import com.example.axel.views.LineChartView;
+import com.example.axel.R;
+import com.example.axel.services.RecordingService;
+import com.example.axel.managers.SensorDataManager;
 
 import java.io.File;
 
